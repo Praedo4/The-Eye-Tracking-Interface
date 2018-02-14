@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+
+<GridPane alignment="center" hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+   <children>
+      <Pane prefHeight="1150.0" prefWidth="1340.0">
+         <children>
+            <Button fx:id="startButton" layoutX="338.0" layoutY="14.0" mnemonicParsing="false" onAction="#startButtonClick" prefHeight="51.0" prefWidth="116.0" text="Start">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font></Button>
+            <Button fx:id="stopButton" layoutX="454.0" layoutY="14.0" mnemonicParsing="false" onAction="#stop" prefHeight="51.0" prefWidth="116.0" text="Stop">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font></Button>
+            <Canvas fx:id="surface" height="1024.0" layoutX="30.0" layoutY="87.0" width="1280.0" />
+            <TextField fx:id="label" layoutX="686.0" layoutY="14.0" prefHeight="51.0" prefWidth="417.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font></TextField>
+            <Button id="chooseFileButton" layoutX="1103.0" layoutY="14.0" mnemonicParsing="false" onAction="#chooseFile" prefHeight="51.0" prefWidth="209.0" text="Choose a file">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font></Button>
+            <RadioButton fx:id="gazePointsRadioButton" layoutX="71.0" layoutY="70.0" mnemonicParsing="false" onAction="#changeMode" prefHeight="35.0" prefWidth="177.0" selected="true" text="Gaze points">
+               <toggleGroup>
+                  <ToggleGroup fx:id="mode" />
+               </toggleGroup>
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </RadioButton>
+            <RadioButton fx:id="eventsRadioButton" layoutX="71.0" layoutY="105.0" mnemonicParsing="false" onAction="#changeMode" prefHeight="35.0" prefWidth="130.0" text="Events" toggleGroup="$mode">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font></RadioButton>
+            <Label layoutX="30.0" layoutY="20.0" prefHeight="44.0" prefWidth="245.0" text="Visualization mode:">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font></Label>
+            <Button layoutX="570.0" layoutY="14.0" mnemonicParsing="false" onAction="#clearScreen" prefHeight="51.0" prefWidth="116.0" text="Clear">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font></Button>
+            <CheckBox fx:id="cleanCheckBox" layoutX="71.0" layoutY="140.0" mnemonicParsing="false" onAction="#setClean" text="Remove negatives">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font></CheckBox>
+            <ListView fx:id="userList" layoutX="71.0" layoutY="212.0" prefHeight="200.0" prefWidth="200.0" />
+            <ListView fx:id="textList" layoutX="71.0" layoutY="449.0" prefHeight="200.0" prefWidth="200.0" />
+            <Label layoutX="71.0" layoutY="412.0" prefHeight="37.0" prefWidth="167.0" text="Select text ID:">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <Label layoutX="71.0" layoutY="175.0" prefHeight="37.0" prefWidth="167.0" text="Select User:">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+         </children>
+      </Pane>
+   </children>
+   <columnConstraints>
+      <ColumnConstraints />
+      <ColumnConstraints />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints />
+   </rowConstraints>
+</GridPane>
