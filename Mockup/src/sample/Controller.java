@@ -25,6 +25,8 @@ import sample.FS.FSReader;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Map;
+import java.util.HashMap;
 import java.io.*;
 
 public class Controller {
@@ -49,6 +51,7 @@ public class Controller {
     boolean clean;
     final int RAW = 0, EVENTS = 1;
     int selectedTextID = -1;
+    Map<Integer, String> imageFilenames;
 
     public void println(String text){
         System.out.println(text);
@@ -61,7 +64,8 @@ public class Controller {
         gc.drawImage(textImage,0,0);
     }
 
-    public Image getImage(int textID){
+    public void readImages(){
+        imageFilenames = new HashMap<Integer, String>();
        try {
            FileReader fileReader = new FileReader("data/screen-shots/table.txt");
            BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -69,22 +73,23 @@ public class Controller {
            String splitLine[];
            while((line = bufferedReader.readLine()) != null){
                splitLine = line.split("\\s");
-               if(Integer.parseInt(splitLine[1]) == textID){
-                   File imageFile = new File("data/screen-shots/" + splitLine[0]);
-                   Image img = new Image(imageFile.toURI().toString());
-                   return  img;
-               }
+               imageFilenames.put(Integer.parseInt(splitLine[1]),splitLine[0]);
            }
        }
        catch (FileNotFoundException ex){
-           println("Error reading the image for textID=" + textID);
-           return null;
+           println("Error reading the image");
        }
        catch (IOException ex){
-           println("Error reading the image for textID=" + textID);
-           return null;
+           println("Error reading the image");
        }
-        return null;
+    }
+
+    public Image getImage(int textID){
+
+        File imageFile = new File("data/screen-shots/" + imageFilenames.get(textID));
+        Image img = new Image(imageFile.toURI().toString());
+        return  img;
+
     }
 
     private boolean withinScreen(double x, double y){
@@ -99,6 +104,7 @@ public class Controller {
         randomNum = new Random();
         changeMode();
         setClean();
+        readImages();
 
         ListView<String> list = new ListView<String>();
         File folder = new File("data/raw_data");
@@ -116,8 +122,14 @@ public class Controller {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 // Your action here
-                fileName = "data/raw_data/p" + newValue + "_ET_samples.txt";
-                label.setText(fileName);
+                if(mode == RAW) {
+                    fileName = "data/raw_data/p" + newValue + "_ET_samples.txt";
+                    label.setText(fileName);
+                }
+                else if (mode == EVENTS){
+                    fileName = "data/events_data/p" + newValue + ".txt";
+                    label.setText(fileName);
+                }
             }
         });
 
@@ -171,13 +183,14 @@ public class Controller {
         else if (mode == EVENTS){
             FSReader fsReader;
             fsReader = new FSReader();
-            eventData = fsReader.readFSCollection(fileName);
+            eventData = fsReader.readFSCollection(fileName, imageFilenames.get(selectedTextID));
             TimerTask task = new TimerTask() {
                 public void run() {
                     if(index >= eventData.size){
                         tm.cancel();
                         tm.purge();
                         println("The end");
+                        return;
                     }
                     FSEvent event = eventData.events[index];
                     if(clean && !withinScreen(event.x,event.y)){
@@ -208,10 +221,16 @@ public class Controller {
     }
 
     public void changeMode(){
-        if(gazePointsRadioButton.isSelected())
+        if(gazePointsRadioButton.isSelected()) {
             mode = RAW;
-        if(eventsRadioButton.isSelected())
+            fileName = "data/raw_data/p" + userList.getSelectionModel().getSelectedItem() + "_ET_samples.txt";
+            label.setText(fileName);
+        }
+        if(eventsRadioButton.isSelected()) {
             mode = EVENTS;
+            fileName = "data/events_data/p" + userList.getSelectionModel().getSelectedItem() + ".txt";
+            label.setText(fileName);
+        }
     }
 
     public void setClean(){

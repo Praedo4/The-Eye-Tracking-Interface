@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class ETReader {
 
@@ -61,4 +62,34 @@ public class ETReader {
         return null;
 
     }
+
+   //public void fixOffset(String fileName, Map<Integer, String> imageFilenames){
+   //    try {
+   //        FileReader fileReader = new FileReader(fileName);
+   //        BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+   //        System.out.println("Reader initalized"); // File open
+
+   //        String line = null;
+   //        while((line = bufferedReader.readLine()) != null) {
+   //            String[] words = line.split("\\s");
+   //            if (words[EVENT_TYPE].compareTo("Fixation") == 0 && words.length > STIMULUS_ID) {
+   //                if (words[STIMULUS_ID].length() < 1 || Integer.parseInt(words[STIMULUS_ID]) < 2 || (text_id != -1 && Integer.parseInt(words[STIMULUS_ID]) != text_id))
+   //                    return;
+   //                double x = Double.parseDouble(words[POS_X]), y = Double.parseDouble(words[POS_Y]);
+   //                long timestamp = Long.parseLong(words[TIMESTAMP]);
+   //                int duration = DURATION;
+
+   //            }
+   //        }
+
+   //    }
+   //    catch(FileNotFoundException ex){
+   //        System.out.println("Unable to open file '" + fileName + "'");
+   //    }
+   //    catch (IOException ex){
+   //        System.out.println("Error reading file '" + fileName + "'");
+   //    }
+   //}
+
 }
