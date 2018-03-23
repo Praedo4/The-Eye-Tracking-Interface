@@ -31,6 +31,25 @@ public class ETReader {
         return null;
     }
 
+    public GazePoint readTETGazePoint(String line, int text_id){
+        String[] words = line.split("}|\\|,\"|,|:|\"");
+        //String[] words = line.split("{\"|\":\"|\",\"|\":|,\"|");
+        if(words.length > 31 ){
+            double x = Double.parseDouble(words[47]), y = Double.parseDouble(words[51]);
+            long timestamp = 100;
+            int duration = DURATION;
+
+            //if(x > 0 && y > 0 && x < 1280 && y < 1028){
+            //    GazePoint point = new GazePoint(x,y,timestamp, duration);
+            //}
+            //else{
+            //System.out.println("Negative Fixation at " + x + "," + y);
+            //}
+            return new GazePoint(x,y,timestamp, duration);
+        }
+        return null;
+    }
+
     public ETCollection readETCollection(String fileName, int text_id ){
         ETCollection collection = new ETCollection();
         ArrayList <GazePoint> gazePoints = new ArrayList<GazePoint>();
@@ -43,6 +62,38 @@ public class ETReader {
             String line = null;
             while((line = bufferedReader.readLine()) != null){
                 GazePoint pt = readGazePoint(line, text_id);
+                if(pt != null){
+                    gazePoints.add(pt);
+                }
+            }
+            GazePoint[] data = (GazePoint[])gazePoints.toArray(new GazePoint[gazePoints.size()]);
+            collection.initialize(data);
+            System.out.println("Reading complete; Collection size: " + data.length); // File read
+            return collection;
+
+        }
+        catch(FileNotFoundException ex){
+            System.out.println("Unable to open file '" + fileName + "'");
+        }
+        catch (IOException ex){
+            System.out.println("Error reading file '" + fileName + "'");
+        }
+        return null;
+
+    }
+
+    public ETCollection readTETCollection(String fileName, int text_id ){
+        ETCollection collection = new ETCollection();
+        ArrayList <GazePoint> gazePoints = new ArrayList<GazePoint>();
+        try {
+            FileReader fileReader = new FileReader(fileName);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+            System.out.println("Reader initalized"); // File open
+
+            String line = null;
+            while((line = bufferedReader.readLine()) != null){
+                GazePoint pt = readTETGazePoint(line, text_id);
                 if(pt != null){
                     gazePoints.add(pt);
                 }

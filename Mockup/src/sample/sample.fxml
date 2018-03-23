@@ -52,7 +52,7 @@
                <font>
                   <Font name="Rockwell" size="24.0" />
                </font></Button>
-            <CheckBox fx:id="cleanCheckBox" layoutX="71.0" layoutY="140.0" mnemonicParsing="false" onAction="#setClean" text="Remove negatives">
+            <CheckBox fx:id="cleanCheckBox" layoutX="267.0" layoutY="71.0" mnemonicParsing="false" onAction="#setClean" prefHeight="32.0" prefWidth="245.0" text="Remove negatives">
                <font>
                   <Font name="Rockwell" size="24.0" />
                </font></CheckBox>
@@ -68,6 +68,11 @@
                   <Font name="Rockwell" size="24.0" />
                </font>
             </Label>
+            <RadioButton fx:id="tetRadioButton" layoutX="71.0" layoutY="140.0" mnemonicParsing="false" onAction="#changeMode" prefHeight="35.0" prefWidth="130.0" text="TET" toggleGroup="$mode">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </RadioButton>
          </children>
       </Pane>
    </children>

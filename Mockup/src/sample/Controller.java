@@ -35,6 +35,7 @@ public class Controller {
     @FXML private Canvas surface;
     @FXML private RadioButton eventsRadioButton;
     @FXML private RadioButton gazePointsRadioButton;
+    @FXML private RadioButton tetRadioButton;
     @FXML private CheckBox cleanCheckBox;
     @FXML private ListView<String> userList;
     @FXML private ListView<Integer> textList;
@@ -49,7 +50,7 @@ public class Controller {
     private FSCollection eventData;
     int mode;
     boolean clean;
-    final int RAW = 0, EVENTS = 1;
+    final int RAW = 0, EVENTS = 1, TET = 2;
     int selectedTextID = -1;
     Map<Integer, String> imageFilenames;
 
@@ -218,6 +219,33 @@ public class Controller {
 
 
         }
+
+        else if(mode == TET){
+
+            ETReader etReader;
+            etReader = new ETReader();
+            rawData = etReader.readTETCollection(fileName, selectedTextID);
+            TimerTask task = new TimerTask() {
+                public void run() {
+                    if(index >= rawData.size){
+                        tm.cancel();
+                        tm.purge();
+                        println("The end");
+                        return;
+                    }
+                    int w = 5, h = 5;
+                    GazePoint pt = rawData.gazePoints[index];
+                    double x = pt.x;
+                    double y = pt.y;
+                    index++;
+                    if(clean && !withinScreen(x,y))
+                        return;
+                    gc.strokeOval(x, y, w, h);
+                }
+
+            };
+            tm.schedule(task,20,20);
+        }
     }
 
     public void changeMode(){
@@ -229,6 +257,11 @@ public class Controller {
         if(eventsRadioButton.isSelected()) {
             mode = EVENTS;
             fileName = "data/events_data/p" + userList.getSelectionModel().getSelectedItem() + ".txt";
+            label.setText(fileName);
+        }
+        if(tetRadioButton.isSelected()) {
+            mode = TET;
+            fileName = "data/tet/TET_raw_" + userList.getSelectionModel().getSelectedItem() + ".txt";
             label.setText(fileName);
         }
     }
