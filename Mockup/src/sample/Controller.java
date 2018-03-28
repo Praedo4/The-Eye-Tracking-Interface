@@ -124,11 +124,11 @@ public class Controller {
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 // Your action here
                 if(mode == RAW) {
-                    fileName = "data/raw_data/p" + newValue + "_ET_samples.txt";
+                    fileName = "data/split_raw_data/p" + newValue + "_" + textList.getSelectionModel().getSelectedItem() + "_ET.txt";
                     label.setText(fileName);
                 }
                 else if (mode == EVENTS){
-                    fileName = "data/events_data/p" + newValue + ".txt";
+                    fileName = "data/split_aggregated_data/p" + newValue + "_" + textList.getSelectionModel().getSelectedItem() + "_FS.txt";
                     label.setText(fileName);
                 }
             }
@@ -140,6 +140,14 @@ public class Controller {
             public void changed(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
                 // Your action here
                 selectedTextID = newValue;
+                if(mode == RAW) {
+                    fileName = "data/split_raw_data/p" + userList.getSelectionModel().getSelectedItem() + "_" + newValue + "_ET.txt";
+                    label.setText(fileName);
+                }
+                else if (mode == EVENTS){
+                    fileName = "data/split_aggregated_data/p" + userList.getSelectionModel().getSelectedItem() + "_" + newValue + "_FS.txt";
+                    label.setText(fileName);
+                }
             }
         });
 
@@ -159,7 +167,7 @@ public class Controller {
         if(mode == RAW) {
             ETReader etReader;
             etReader = new ETReader();
-            rawData = etReader.readETCollection(fileName, selectedTextID);
+            rawData = etReader.readETCollection(fileName);
             TimerTask task = new TimerTask() {
                 public void run() {
                     if(index >= rawData.size){
@@ -184,7 +192,7 @@ public class Controller {
         else if (mode == EVENTS){
             FSReader fsReader;
             fsReader = new FSReader();
-            eventData = fsReader.readFSCollection(fileName, imageFilenames.get(selectedTextID));
+            eventData = fsReader.readFSCollection(fileName);
             TimerTask task = new TimerTask() {
                 public void run() {
                     if(index >= eventData.size){
@@ -224,7 +232,7 @@ public class Controller {
 
             ETReader etReader;
             etReader = new ETReader();
-            rawData = etReader.readTETCollection(fileName, selectedTextID);
+            rawData = etReader.readTETCollection(fileName);
             TimerTask task = new TimerTask() {
                 public void run() {
                     if(index >= rawData.size){
@@ -251,12 +259,12 @@ public class Controller {
     public void changeMode(){
         if(gazePointsRadioButton.isSelected()) {
             mode = RAW;
-            fileName = "data/raw_data/p" + userList.getSelectionModel().getSelectedItem() + "_ET_samples.txt";
+            fileName = "data/split_raw_data/p" + userList.getSelectionModel().getSelectedItem()+ "_" + textList.getSelectionModel().getSelectedItem() + "_ET.txt";
             label.setText(fileName);
         }
         if(eventsRadioButton.isSelected()) {
             mode = EVENTS;
-            fileName = "data/events_data/p" + userList.getSelectionModel().getSelectedItem() + ".txt";
+            fileName = "data/split_aggregated_data/p" + userList.getSelectionModel().getSelectedItem() + "_" + textList.getSelectionModel().getSelectedItem() + "_FS.txt";
             label.setText(fileName);
         }
         if(tetRadioButton.isSelected()) {
