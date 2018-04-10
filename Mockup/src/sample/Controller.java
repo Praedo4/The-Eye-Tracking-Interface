@@ -6,12 +6,9 @@ import javafx.collections.ObservableList;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.stage.FileChooser;
 import sample.ET.ETCollection;
@@ -36,9 +33,12 @@ public class Controller {
     @FXML private RadioButton eventsRadioButton;
     @FXML private RadioButton gazePointsRadioButton;
     @FXML private RadioButton tetRadioButton;
+    @FXML private RadioButton dispersionRadioButton;
+    @FXML private RadioButton durationRadioButton;
     @FXML private CheckBox cleanCheckBox;
     @FXML private ListView<String> userList;
     @FXML private ListView<Integer> textList;
+    @FXML private Label visualizationLabel;
     private GraphicsContext gc;
     private Random randomNum;
     private Timer tm;
@@ -49,9 +49,10 @@ public class Controller {
     private ETCollection rawData;
     private FSCollection eventData;
     int mode;
-    boolean clean;
+    boolean clean, durationDisplay = false;
     final int RAW = 0, EVENTS = 1, TET = 2;
     int selectedTextID = -1;
+    long durationLeft = 0;
     Map<Integer, String> imageFilenames;
 
     public void println(String text){
@@ -103,7 +104,7 @@ public class Controller {
         label.setText(fileName);
         gc = surface.getGraphicsContext2D();
         randomNum = new Random();
-        changeMode();
+        changeDataMode();
         setClean();
         readImages();
 
@@ -162,7 +163,7 @@ public class Controller {
         }
         tm = new Timer();
         index = 0;
-        changeMode();
+        changeDataMode();
         setClean();
         if(mode == RAW) {
             ETReader etReader;
@@ -195,7 +196,11 @@ public class Controller {
             eventData = fsReader.readFSCollection(fileName);
             TimerTask task = new TimerTask() {
                 public void run() {
-                    if(index >= eventData.size){
+                    if(durationLeft != 0) {
+                        durationLeft--;
+                        return;
+                    }
+                    if(index >= eventData.size - 6){
                         tm.cancel();
                         tm.purge();
                         println("The end");
@@ -207,7 +212,21 @@ public class Controller {
                         return;
                     }
                     if(event.type == event.FIXATION){
-                        gc.strokeOval(event.x, event.y, event.x2, event.y2);
+                        //println(( Long.toString(event.duration)));
+                        double disp = 1 + event.duration / 20000.0;
+                        durationLeft = event.duration / 40000;
+                        if(index != 0){
+                            FSEvent prevEvent = eventData.events[index-1];
+                            if(!clean || (withinScreen(event.x,event.y) && withinScreen(prevEvent.x, prevEvent.y)))
+                                gc.strokeLine( prevEvent.x, prevEvent.y, event.x, event.y);
+
+                        }
+                        if(durationDisplay) {
+                            gc.strokeOval(event.x - disp / 2, event.y - disp / 2, disp, disp);
+                        }
+                        else{
+                            gc.strokeOval(event.x - event.x2/2, event.y - event.y2/2, event.x2, event.y2);
+                        }
                     }
                     else if(event.type == event.SACCADE){
                         if(clean && !withinScreen(event.x2,event.y2)){
@@ -256,21 +275,42 @@ public class Controller {
         }
     }
 
-    public void changeMode(){
+    private void showEventVisualizationControls(int op){
+        dispersionRadioButton.setOpacity(op);
+        durationRadioButton.setOpacity(op);
+        cleanCheckBox.setOpacity(op);
+        visualizationLabel.setOpacity(op);
+
+    }
+
+    public void changeDataMode(){
         if(gazePointsRadioButton.isSelected()) {
             mode = RAW;
             fileName = "data/split_raw_data/p" + userList.getSelectionModel().getSelectedItem()+ "_" + textList.getSelectionModel().getSelectedItem() + "_ET.txt";
             label.setText(fileName);
+            showEventVisualizationControls(0);
+
         }
-        if(eventsRadioButton.isSelected()) {
+        else if(eventsRadioButton.isSelected()) {
             mode = EVENTS;
             fileName = "data/split_aggregated_data/p" + userList.getSelectionModel().getSelectedItem() + "_" + textList.getSelectionModel().getSelectedItem() + "_FS.txt";
             label.setText(fileName);
+            showEventVisualizationControls(1);
         }
-        if(tetRadioButton.isSelected()) {
+        else if(tetRadioButton.isSelected()) {
             mode = TET;
             fileName = "data/tet/TET_raw_" + userList.getSelectionModel().getSelectedItem() + ".txt";
             label.setText(fileName);
+            showEventVisualizationControls(0);
+        }
+    }
+
+    public void changeEventVisualizationMode(){
+        if(durationRadioButton.isSelected()) {
+            durationDisplay = true;
+        }
+        else if(dispersionRadioButton.isSelected()){
+            durationDisplay = false;
         }
     }
 
