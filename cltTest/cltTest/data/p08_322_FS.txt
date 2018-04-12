@@ -1,0 +1,4 @@
+rails_session_id	eye	start_event_name	start_event_stimulus_id	stop_event_name	stop_event_stimulus_id	event type	number	start	end	duration	location X	location Y	dispersion X	dispersion Y	avg. pupil size X	avg. pupil size Y
+8	left	stimulus_322	322	stimulus_322	322	Fixation L	1	366747036613	366747319861	283248	855.5774	287.8805	32	65	14.63	14.63
+8	right	stimulus_322	322	stimulus_322	322	Fixation R	1	366747036613	366747286527	249914	852.9543	291.2223	21	61	13.01	13.01
+8	left	stimulus_322	322	stimulus_322	322	Fixation L	2	366747469770	366747603356	133586	-2	-91	2	90	9.12	9.12
