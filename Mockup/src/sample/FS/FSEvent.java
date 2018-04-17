@@ -20,11 +20,11 @@ public class FSEvent {
         dest.type = type;
     } 
 
-    FSEvent(){
+    public FSEvent(){
         x = y = x2 = y2 = start = end =  duration = type = -1;
     }
 
-    FSEvent(double cx, double cy, double cdx, double cdy, long cstart, long cend, long cdur, boolean isFixation){
+    public FSEvent(double cx, double cy, double cdx, double cdy, long cstart, long cend, long cdur, boolean isFixation){
         x = cx;
         y = cy;
         x2 = cdx;
