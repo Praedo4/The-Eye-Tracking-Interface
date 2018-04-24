@@ -91,27 +91,57 @@
                   <Font name="Rockwell" size="24.0" />
                </font>
             </Label>
-            <Button fx:id="runIDTButton" layoutX="1067.0" layoutY="286.0" mnemonicParsing="false" onAction="#runEventDetection" prefHeight="51.0" prefWidth="245.0" text="Run I-DT">
+            <Button fx:id="runIDTButton" layoutX="1065.0" layoutY="558.0" mnemonicParsing="false" onAction="#runEventDetection" prefHeight="51.0" prefWidth="245.0" text="Run I-DT">
                <font>
                   <Font name="Rockwell" size="24.0" />
                </font>
             </Button>
-            <Label layoutX="1067.0" layoutY="71.0" prefHeight="44.0" prefWidth="245.0" text="Maximum dispersion:">
+            <Label layoutX="1065.0" layoutY="343.0" prefHeight="44.0" prefWidth="245.0" text="Maximum dispersion:">
                <font>
                   <Font name="Rockwell" size="24.0" />
                </font>
             </Label>
-            <TextField fx:id="dispersionTextBox" layoutX="1103.0" layoutY="115.0" onKeyTyped="#setIdtDispersion" prefHeight="51.0" prefWidth="209.0" promptText="Enter maximum duration value (in pixels) that will be used for i-DT event detection algorithm" text="50">
+            <TextField fx:id="dispersionTextBox" layoutX="1101.0" layoutY="387.0" onKeyTyped="#setIdtDispersion" prefHeight="51.0" prefWidth="209.0" promptText="Enter maximum duration value (in pixels) that will be used for i-DT event detection algorithm" text="50">
                <font>
                   <Font name="Rockwell" size="24.0" />
                </font>
             </TextField>
-            <TextField fx:id="durationTextBox" layoutX="1103.0" layoutY="219.0" onAction="#setIdtDuration" onKeyTyped="#setIdtDuration" prefHeight="51.0" prefWidth="209.0" promptText="Enter minimum duration value (in number of samples) that will be used in i-DT event detection algorithm" text="5">
+            <TextField fx:id="durationTextBox" layoutX="1101.0" layoutY="491.0" onAction="#setIdtDuration" onKeyTyped="#setIdtDuration" prefHeight="51.0" prefWidth="209.0" promptText="Enter minimum duration value (in number of samples) that will be used in i-DT event detection algorithm" text="5">
                <font>
                   <Font name="Rockwell" size="24.0" />
                </font>
             </TextField>
-            <Label layoutX="1067.0" layoutY="175.0" prefHeight="44.0" prefWidth="245.0" text="Minimum duration:">
+            <Label layoutX="1065.0" layoutY="447.0" prefHeight="44.0" prefWidth="245.0" text="Minimum duration:">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <Label layoutX="1065.0" layoutY="83.0" prefHeight="44.0" prefWidth="245.0" text="Interpolation:">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <CheckBox fx:id="interpolationCheckBox" layoutX="1234.0" layoutY="87.0" mnemonicParsing="false" onAction="#setInterpolation" prefHeight="32.0" prefWidth="33.0" selected="true">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </CheckBox>
+            <Label layoutX="1065.0" layoutY="227.0" prefHeight="44.0" prefWidth="245.0" text="Minimum gap size:">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="minGapSizeTextBox" layoutX="1101.0" layoutY="271.0" onAction="#setIdtDuration" onKeyTyped="#setMinGapSize" prefHeight="51.0" prefWidth="209.0" promptText="Enter minimum duration value (in number of samples) that will be used in i-DT event detection algorithm" text="3">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <TextField fx:id="maxGapSizeTextBox" layoutX="1101.0" layoutY="167.0" onKeyTyped="#setMaxGapSize" prefHeight="51.0" prefWidth="209.0" promptText="Enter maximum duration value (in pixels) that will be used for i-DT event detection algorithm" text="10">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="1065.0" layoutY="123.0" prefHeight="44.0" prefWidth="245.0" text="Maximum gap size:">
                <font>
                   <Font name="Rockwell" size="24.0" />
                </font>

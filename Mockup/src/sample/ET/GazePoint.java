@@ -16,7 +16,7 @@ public class GazePoint {
         x = y = timestamp = duration = -1;
     }
 
-    GazePoint(double cx, double cy, long ctm, long cdur){
+    public GazePoint(double cx, double cy, long ctm, long cdur){
         x = cx;
         y = cy;
         timestamp = ctm;

@@ -20,11 +20,7 @@ import sample.FS.FSEvent;
 import sample.FS.FSReader;
 
 
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 import java.io.*;
 
 public class Controller {
@@ -42,6 +38,9 @@ public class Controller {
     @FXML private Label visualizationLabel;
     @FXML private TextField dispersionTextBox;
     @FXML private TextField durationTextBox;
+    @FXML private TextField minGapSizeTextBox;
+    @FXML private TextField maxGapSizeTextBox;
+    @FXML private CheckBox interpolationCheckBox;
     private GraphicsContext gc;
     private Random randomNum;
     private Timer tm;
@@ -60,6 +59,7 @@ public class Controller {
     int idtDispersion, idtDuration;
     boolean isIDT = false;
     Map<Integer, String> imageFilenames;
+    int minGapSize = 3, maxGapSize = 10; boolean interpolation = true;
 
     public void println(String text){
         System.out.println(text);
@@ -240,6 +240,8 @@ public class Controller {
         else if(mode == RAW) {
             ETReader etReader = new ETReader();
             rawData = etReader.readETCollection(fileName);
+            if(interpolation)
+                runInterpolation();
             TimerTask task = new TimerTask() {
                 public void run() {
                     if(index >= rawData.size){
@@ -344,6 +346,49 @@ public class Controller {
         }
     }
 
+    public void runInterpolation(){
+        int totalMissingSamples = 0;
+        for (int i = 1; i < rawData.size; i++){
+            GazePoint pt = rawData.gazePoints[i];
+            GazePoint prevPt = rawData.gazePoints[i-1];
+            int missingSamples = (int)(pt.timestamp - prevPt.timestamp) / 15000;
+            if (missingSamples > minGapSize && missingSamples < maxGapSize){
+                //List<> newRawData
+                //for(int j = 0; j < missingSamples; j ++){
+                //    rawData.gazePoints.
+                //}
+                println("Missing samples: " + missingSamples);
+                totalMissingSamples += missingSamples;
+            }
+        }
+        println("Total missing samples: " + totalMissingSamples);
+        GazePoint[] newRawData = new GazePoint[rawData.size + totalMissingSamples];
+        int missingSamplesAdded  = 0;
+        newRawData[0] = rawData.gazePoints[0];
+        for (int i = 1; i < rawData.size; i++){
+            GazePoint pt = rawData.gazePoints[i];
+            GazePoint prevPt = rawData.gazePoints[i-1];
+            int missingSamples = (int)(pt.timestamp - prevPt.timestamp) / 15000;
+            if (missingSamples > minGapSize && missingSamples < maxGapSize){
+                for(int j = 1; j <= missingSamples; j++){
+                    double newX = prevPt.x + (pt.x - prevPt.x) * (j * 1.0 / missingSamples);
+                    double newY = prevPt.y + (pt.y - prevPt.y) * (j * 1.0 / missingSamples);
+                    long newTimestamp = prevPt.timestamp + 15000 * j;
+                    long newDuration = 15000;
+                    GazePoint newPt = new GazePoint(newX,newY,newTimestamp,newDuration);
+                    newRawData[i + missingSamplesAdded] = newPt;
+                    missingSamplesAdded++;
+                    println("Added #"+missingSamplesAdded + "at (" + newX + "," + newY + ") ts:" + newTimestamp + " duration: " + newDuration);
+                }
+            }
+            newRawData[i + missingSamplesAdded] = rawData.gazePoints[i];
+        }
+        rawData.initialize(newRawData);
+        println("Interpolation complete");
+
+
+    }
+
     public void runEventDetection(){
         // Create lists of timestamps, xs and ys
         //if(mode != RAW){
@@ -352,6 +397,8 @@ public class Controller {
             setClean();
             ETReader etReader = new ETReader();
             rawData = etReader.readETCollection(fileName);
+            if(interpolation)
+                runInterpolation();
         //}
 
         int n = rawData.size;
@@ -372,6 +419,12 @@ public class Controller {
             // Run IDT
             String callIDT = "emov.idt(t,x,y," + idtDispersion + "," + idtDuration + ")";
             rResult = re.eval(callIDT);
+            if(rResult == null){
+                println("rJava and/or emov package are missing. Launching installation process");
+                re.eval("install.packages(\'rJava\')");
+                re.eval("install.packages(\'emov\')");
+                rResult = re.eval(callIDT);
+            }
             // Get the data back from R
             RList l = rResult.asList();
             int starts[] = l.at(0).asIntArray();
@@ -457,6 +510,28 @@ public class Controller {
         }
         catch (NumberFormatException ex){
             durationTextBox.setText("Enter integer");
+        }
+    }
+
+    public void setInterpolation(){
+        interpolation = interpolationCheckBox.isSelected();
+    }
+
+    public void setMinGapSize(){
+        try{
+            minGapSize = Integer.parseInt(minGapSizeTextBox.getText());
+        }
+        catch (NumberFormatException ex){
+            minGapSizeTextBox.setText("Enter integer");
+        }
+    }
+
+    public void setMaxGapSize(){
+        try{
+            maxGapSize = Integer.parseInt(maxGapSizeTextBox.getText());
+        }
+        catch (NumberFormatException ex){
+            minGapSizeTextBox.setText("Enter integer");
         }
     }
 
