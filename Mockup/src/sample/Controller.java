@@ -40,7 +40,10 @@ public class Controller {
     @FXML private TextField durationTextBox;
     @FXML private TextField minGapSizeTextBox;
     @FXML private TextField maxGapSizeTextBox;
+    @FXML private TextField sgolayOrderTextBox;
+    @FXML private TextField sgolayLengthTextBox;
     @FXML private CheckBox interpolationCheckBox;
+    @FXML private CheckBox sgolayCheckBox;
     private GraphicsContext gc;
     private Random randomNum;
     private Timer tm;
@@ -59,7 +62,7 @@ public class Controller {
     int idtDispersion, idtDuration;
     boolean isIDT = false;
     Map<Integer, String> imageFilenames;
-    int minGapSize = 3, maxGapSize = 10; boolean interpolation = true;
+    int minGapSize = 3, maxGapSize = 10; boolean interpolation = false, sgolay = false; int sgolayOrder = 1, sgolayLength = 25;
 
     public void println(String text){
         System.out.println(text);
@@ -185,6 +188,7 @@ public class Controller {
         }
         tm = new Timer();
         index = 0;
+        if(sgolay)index=1;
         clearScreen();
         if (isIDT){
             TimerTask task = new TimerTask() {
@@ -415,9 +419,25 @@ public class Controller {
 
         REXP rResult;
         // Pass the data to R
-        if(re.assign("t",timestamps) && re.assign("x",xs) && re.assign("y", ys)){
+        if(re.assign("ts",timestamps) && re.assign("xs",xs) && re.assign("ys", ys)){
             // Run IDT
-            String callIDT = "emov.idt(t,x,y," + idtDispersion + "," + idtDuration + ")";
+            if(sgolay) { // Run Savitzky-Golay smoothing filter
+                rResult = re.eval("library(signal, warn.conflicts = FALSE)");
+                //Result = re.eval("");
+                //re.assign("sg1",rResult);
+                rResult = re.eval("print(xs)");
+                //rResult = re.eval("print(sg1)");
+                rResult = re.eval("filter(sgolay(p=" + sgolayOrder + ", n=" + sgolayLength + ", m=0), xs)");
+                if (rResult == null) {
+                    re.eval("install.packages(\'signal\')");
+                    rResult = re.eval("require(signal)");
+                    rResult = re.eval("filter(sgolay(p=1, n=25, m=0), xs)");
+                }
+                re.assign("xs", rResult);
+                rResult = re.eval("filter(sgolay(p=1, n=25, m=0), ys)");
+                re.assign("ys", rResult);
+            }
+            String callIDT = "emov.idt(ts,xs,ys," + idtDispersion + "," + idtDuration + ")";
             rResult = re.eval(callIDT);
             if(rResult == null){
                 println("rJava and/or emov package are missing. Launching installation process");
@@ -517,12 +537,18 @@ public class Controller {
         interpolation = interpolationCheckBox.isSelected();
     }
 
+    public void setSgolay(){
+        sgolay = sgolayCheckBox.isSelected();
+    }
+
+
     public void setMinGapSize(){
         try{
             minGapSize = Integer.parseInt(minGapSizeTextBox.getText());
         }
         catch (NumberFormatException ex){
-            minGapSizeTextBox.setText("Enter integer");
+            if(!minGapSizeTextBox.getText().isEmpty())
+                minGapSizeTextBox.setText("Enter integer");
         }
     }
 
@@ -531,7 +557,32 @@ public class Controller {
             maxGapSize = Integer.parseInt(maxGapSizeTextBox.getText());
         }
         catch (NumberFormatException ex){
-            minGapSizeTextBox.setText("Enter integer");
+            if(!minGapSizeTextBox.getText().isEmpty())
+                minGapSizeTextBox.setText("Enter integer");
+        }
+    }
+
+
+    public void setSgolayOrder(){
+        try{
+            sgolayOrder = Integer.parseInt(sgolayOrderTextBox.getText());
+        }
+        catch (NumberFormatException ex){
+            if(!sgolayOrderTextBox.getText().isEmpty())
+                sgolayOrderTextBox.setText("Enter integer");
+        }
+    }
+
+    public void setSgolayLength(){
+        try{
+            if(Integer.parseInt(sgolayLengthTextBox.getText()) % 2 == 1)
+                sgolayLength = Integer.parseInt(sgolayLengthTextBox.getText());
+            else
+                sgolayLengthTextBox.setText("Enter an odd integer");
+        }
+        catch (NumberFormatException ex){
+            if(!sgolayLengthTextBox.getText().isEmpty())
+                sgolayLengthTextBox.setText("Enter integer");
         }
     }
 
