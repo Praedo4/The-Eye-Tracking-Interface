@@ -42,8 +42,12 @@ public class Controller {
     @FXML private TextField maxGapSizeTextBox;
     @FXML private TextField sgolayOrderTextBox;
     @FXML private TextField sgolayLengthTextBox;
+    @FXML private TextField timeMissingTextBox;
+    @FXML private TextField timeMissingSamplesTextBox;
+    @FXML private TextField lineSaccadesTextBox;
     @FXML private CheckBox interpolationCheckBox;
     @FXML private CheckBox sgolayCheckBox;
+    @FXML private Slider speedSlider;
     private GraphicsContext gc;
     private Random randomNum;
     private Timer tm;
@@ -63,6 +67,7 @@ public class Controller {
     boolean isIDT = false;
     Map<Integer, String> imageFilenames;
     int minGapSize = 3, maxGapSize = 10; boolean interpolation = false, sgolay = false; int sgolayOrder = 1, sgolayLength = 25;
+    double speed = 2.0;
 
     public void println(String text){
         System.out.println(text);
@@ -110,7 +115,7 @@ public class Controller {
     }
 
     public void initialize() {
-        label.setText(fileName);
+        //label.setText(fileName);
         gc = surface.getGraphicsContext2D();
         randomNum = new Random();
         changeDataMode();
@@ -137,11 +142,11 @@ public class Controller {
                 // Your action here
                 if(mode == RAW) {
                     fileName = "data/split_raw_data/p" + newValue + "_" + textList.getSelectionModel().getSelectedItem() + "_ET.txt";
-                    label.setText(fileName);
+                    //label.setText(fileName);
                 }
                 else if (mode == EVENTS){
                     fileName = "data/split_aggregated_data/p" + newValue + "_" + textList.getSelectionModel().getSelectedItem() + "_FS.txt";
-                    label.setText(fileName);
+                   // label.setText(fileName);
                 }
             }
         });
@@ -154,14 +159,19 @@ public class Controller {
                 selectedTextID = newValue;
                 if(mode == RAW) {
                     fileName = "data/split_raw_data/p" + userList.getSelectionModel().getSelectedItem() + "_" + newValue + "_ET.txt";
-                    label.setText(fileName);
+                    //label.setText(fileName);
                 }
                 else if (mode == EVENTS){
                     fileName = "data/split_aggregated_data/p" + userList.getSelectionModel().getSelectedItem() + "_" + newValue + "_FS.txt";
-                    label.setText(fileName);
+                    //
+                    //
+                    // label.setText(fileName);
                 }
             }
         });
+        speed = speedSlider.getValue();
+        speedSlider.valueProperty().addListener((obs, oldVal,newVal) ->
+            speed = newVal.doubleValue());
 
         String args[] = null;
         re=new Rengine(args, false, new TextConsole());
@@ -190,6 +200,7 @@ public class Controller {
         index = 0;
         if(sgolay)index=1;
         clearScreen();
+        long interval = Math.round(20.0 / speed);
         if (isIDT){
             TimerTask task = new TimerTask() {
                 public void run() {
@@ -197,7 +208,7 @@ public class Controller {
                         durationLeft--;
                         return;
                     }
-                    if(index >= eventData.size - 6){
+                    if(index >= eventData.size){
                         tm.cancel();
                         tm.purge();
                         println("The end");
@@ -211,7 +222,7 @@ public class Controller {
                     if(event.type == event.FIXATION){
                         //println(( Long.toString(event.duration)));
                         double disp = 1 + event.duration / 20000.0;
-                        durationLeft = event.duration / 40000;
+                        durationLeft = event.duration / 20000;
                         if(index != 0){
                             FSEvent prevEvent = eventData.events[index-1];
                             if(!clean || (withinScreen(event.x,event.y) && withinScreen(prevEvent.x, prevEvent.y)))
@@ -239,7 +250,7 @@ public class Controller {
                 }
 
             };
-            tm.schedule(task,20,20);
+            tm.schedule(task,interval,interval);
         }
         else if(mode == RAW) {
             ETReader etReader = new ETReader();
@@ -265,7 +276,7 @@ public class Controller {
                 }
 
             };
-            tm.schedule(task,20,20);
+            tm.schedule(task,interval,interval);
         }
         else if (mode == EVENTS){
             FSReader fsReader = new FSReader();
@@ -276,7 +287,7 @@ public class Controller {
                         durationLeft--;
                         return;
                     }
-                    if(index >= eventData.size - 6){
+                    if(index >= eventData.size){
                         tm.cancel();
                         tm.purge();
                         println("The end");
@@ -290,7 +301,7 @@ public class Controller {
                     if(event.type == event.FIXATION){
                         //println(( Long.toString(event.duration)));
                         double disp = 1 + event.duration / 20000.0;
-                        durationLeft = event.duration / 40000;
+                        durationLeft = event.duration / 20000;
                         if(index != 0){
                             FSEvent prevEvent = eventData.events[index-1];
                             if(!clean || (withinScreen(event.x,event.y) && withinScreen(prevEvent.x, prevEvent.y)))
@@ -318,7 +329,7 @@ public class Controller {
                 }
 
             };
-            tm.schedule(task,20,20);
+            tm.schedule(task,interval,interval);
 
 
         }
@@ -346,12 +357,13 @@ public class Controller {
                 }
 
             };
-            tm.schedule(task,20,20);
+            tm.schedule(task,interval,interval);
         }
     }
 
     public void runInterpolation(){
         int totalMissingSamples = 0;
+        long totalTime = 0;
         for (int i = 1; i < rawData.size; i++){
             GazePoint pt = rawData.gazePoints[i];
             GazePoint prevPt = rawData.gazePoints[i-1];
@@ -364,8 +376,12 @@ public class Controller {
                 println("Missing samples: " + missingSamples);
                 totalMissingSamples += missingSamples;
             }
+            if(missingSamples > minGapSize)
+                totalTime += pt.timestamp - prevPt.timestamp;
         }
         println("Total missing samples: " + totalMissingSamples);
+        timeMissingTextBox.setText(Long.toString(totalTime / 1000));
+        timeMissingSamplesTextBox.setText(Integer.toString(totalMissingSamples));
         GazePoint[] newRawData = new GazePoint[rawData.size + totalMissingSamples];
         int missingSamplesAdded  = 0;
         newRawData[0] = rawData.gazePoints[0];
@@ -464,11 +480,25 @@ public class Controller {
             // Visualize the data
             isIDT = true;
             //showEventVisualizationControls(1);
+            extractFeatures();
             startVisualization();
         }
         else{
             println("Failed to assign data to R");
         }
+
+    }
+
+    private void extractFeatures(){
+        int lineSaccades = 0;
+        for(int i  = 1 ; i < eventData.size; i ++){
+            double xdist = eventData.events[i].x - eventData.events[i-1].x;
+            double ydist = eventData.events[i].y - eventData.events[i-1].y;
+            double distSq = xdist*xdist + ydist*ydist;
+            if (distSq > 100000 && ydist / xdist < 0.05)
+                lineSaccades++;
+        }
+        lineSaccadesTextBox.setText(Integer.toString(lineSaccades));
 
     }
 
@@ -484,20 +514,20 @@ public class Controller {
         if(gazePointsRadioButton.isSelected()) {
             mode = RAW;
             fileName = "data/split_raw_data/p" + userList.getSelectionModel().getSelectedItem()+ "_" + textList.getSelectionModel().getSelectedItem() + "_ET.txt";
-            label.setText(fileName);
+           // label.setText(fileName);
            //showEventVisualizationControls(0);
 
         }
         else if(eventsRadioButton.isSelected()) {
             mode = EVENTS;
             fileName = "data/split_aggregated_data/p" + userList.getSelectionModel().getSelectedItem() + "_" + textList.getSelectionModel().getSelectedItem() + "_FS.txt";
-            label.setText(fileName);
-           // showEventVisualizationControls(1);
+           // label.setText(fileName);
+           /// showEventVisualizationControls(1);
         }
         else if(tetRadioButton.isSelected()) {
             mode = TET;
             fileName = "data/tet/TET_raw_" + userList.getSelectionModel().getSelectedItem() + ".txt";
-            label.setText(fileName);
+           // label.setText(fileName);
            // showEventVisualizationControls(0);
         }
     }

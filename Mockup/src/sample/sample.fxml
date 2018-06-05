@@ -24,14 +24,6 @@
                   <Font name="Rockwell" size="24.0" />
                </font></Button>
             <Canvas fx:id="surface" height="855.0" layoutX="30.0" layoutY="87.0" width="1280.0" />
-            <TextField fx:id="label" layoutX="686.0" layoutY="14.0" prefHeight="51.0" prefWidth="417.0">
-               <font>
-                  <Font name="Rockwell" size="24.0" />
-               </font></TextField>
-            <Button id="chooseFileButton" layoutX="1103.0" layoutY="14.0" mnemonicParsing="false" onAction="#chooseFile" prefHeight="51.0" prefWidth="209.0" text="Choose a file">
-               <font>
-                  <Font name="Rockwell" size="24.0" />
-               </font></Button>
             <RadioButton fx:id="gazePointsRadioButton" layoutX="71.0" layoutY="70.0" mnemonicParsing="false" onAction="#changeDataMode" prefHeight="35.0" prefWidth="177.0" selected="true" text="Gaze points">
                <font>
                   <Font name="Rockwell" size="24.0" />
@@ -176,6 +168,42 @@
                   <Font name="Rockwell" size="24.0" />
                </font>
             </Label>
+            <Slider fx:id="speedSlider" blockIncrement="1.0" layoutX="790.0" layoutY="18.0" majorTickUnit="1.0" max="10.0" minorTickCount="10" prefHeight="44.0" prefWidth="436.0" showTickLabels="true" showTickMarks="true" value="10.0" />
+            <Label layoutX="693.0" layoutY="20.0" prefHeight="44.0" prefWidth="97.0" text="Speed:">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="timeMissingTextBox" layoutX="434.0" layoutY="802.0" onAction="#setMinGapSize" onKeyTyped="#setMinGapSize" prefHeight="51.0" prefWidth="116.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="274.0" layoutY="802.0" prefHeight="44.0" prefWidth="154.0" text="Missing time">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <Label layoutX="298.0" layoutY="850.0" prefHeight="44.0" prefWidth="130.0" text="# samples">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="timeMissingSamplesTextBox" layoutX="434.0" layoutY="850.0" onAction="#setMinGapSize" onKeyTyped="#setMinGapSize" prefHeight="51.0" prefWidth="116.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="570.0" layoutY="802.0" prefHeight="44.0" prefWidth="161.0" text="Line saccades">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="lineSaccadesTextBox" layoutX="732.0" layoutY="802.0" onAction="#setMinGapSize" onKeyTyped="#setMinGapSize" prefHeight="51.0" prefWidth="116.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
          </children>
       </Pane>
    </children>
