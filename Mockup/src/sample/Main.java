@@ -14,7 +14,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
-        primaryStage.setTitle("The Eye-Trcaking Interface");
+        primaryStage.setTitle("The Eye Tracking Interface");
         primaryStage.setScene(new Scene(root, 1340, 950));
         primaryStage.setResizable(false);
         primaryStage.show();

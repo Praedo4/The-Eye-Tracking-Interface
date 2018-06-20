@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Pane prefHeight="900.0" prefWidth="1000.0">
+         <children>
+            <Label layoutX="171.0" layoutY="14.0" prefHeight="44.0" prefWidth="102.0" text="User ID:">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="userIDTextBox" layoutX="282.0" layoutY="15.0" prefHeight="51.0" prefWidth="91.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <TextField fx:id="textIDTextBox" layoutX="493.0" layoutY="16.0" prefHeight="51.0" prefWidth="102.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="382.0" layoutY="15.0" prefHeight="44.0" prefWidth="102.0" text="Text ID:">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <Button fx:id="startButton" layoutX="606.0" layoutY="15.0" mnemonicParsing="false" onAction="#startButtonClick" prefHeight="51.0" prefWidth="225.0" text="Extract Features">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Button>
+            <TextField fx:id="numberOfFixationsTextBox" layoutX="284.0" layoutY="120.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="147.0" layoutY="120.0" prefHeight="44.0" prefWidth="129.0" text="# Fixations">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <Label layoutX="111.0" layoutY="175.0" prefHeight="44.0" prefWidth="165.0" text="Mean duration">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="meanFixationDurationTextBox" layoutX="284.0" layoutY="175.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="165.0" layoutY="287.0" prefHeight="44.0" prefWidth="118.0" text="Skewness">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="skewnessTextBox" layoutX="284.0" layoutY="286.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="147.0" layoutY="234.0" prefHeight="44.0" prefWidth="136.0" text="Duration SD">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="sdTextBox" layoutX="284.0" layoutY="233.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <TextField fx:id="meanSaccadicDurationTextBox" layoutX="774.0" layoutY="175.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="604.0" layoutY="176.0" prefHeight="44.0" prefWidth="165.0" text="Mean duration">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <Label layoutX="631.0" layoutY="120.0" prefHeight="44.0" prefWidth="136.0" text="# Saccades">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="numberOfSaccadesTextBox" layoutX="774.0" layoutY="120.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="589.0" layoutY="233.0" prefHeight="44.0" prefWidth="184.0" text="Mean amplitude">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="meanSaccadicAmplitudeTextBox" layoutX="774.0" layoutY="233.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <TextField fx:id="meanSaccadicVelocityTextBox" layoutX="774.0" layoutY="286.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="612.0" layoutY="287.0" prefHeight="44.0" prefWidth="157.0" text="Mean velocity">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <Label layoutX="601.0" layoutY="507.0" prefHeight="44.0" prefWidth="171.0" text="# line saccades">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="lineSaccadesTextBox" layoutX="774.0" layoutY="506.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <TextField fx:id="fixationsPerLineTextBox" layoutX="284.0" layoutY="515.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="147.0" layoutY="516.0" prefHeight="44.0" prefWidth="129.0" text="# Fixations">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <Label layoutX="105.0" layoutY="570.0" prefHeight="44.0" prefWidth="177.0" text="Perception time">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="perceptionPerLineTextBox" layoutX="284.0" layoutY="569.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <TextField fx:id="regressionsPerLineTextBox" layoutX="774.0" layoutY="560.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="540.0" layoutY="561.0" prefHeight="44.0" prefWidth="234.0" text="Regressions per line">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="regressionsTextBox" layoutX="774.0" layoutY="368.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="611.0" layoutY="369.0" prefHeight="44.0" prefWidth="157.0" text="# regressions">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="lineSaccadesTextBox2" layoutX="774.0" layoutY="424.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="518.0" layoutY="425.0" prefHeight="44.0" prefWidth="249.0" text="Regression proportion">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="lookaheadsTextBox" layoutX="284.0" layoutY="368.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+            <Label layoutX="121.0" layoutY="369.0" prefHeight="44.0" prefWidth="157.0" text="# lookaheads">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <Label layoutX="14.0" layoutY="425.0" prefHeight="44.0" prefWidth="267.0" text="Lookeahead proportion">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </Label>
+            <TextField fx:id="lineSaccadesTextBox21" layoutX="284.0" layoutY="424.0" prefHeight="45.0" prefWidth="165.0">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </TextField>
+         </children>
+      </Pane>
+   </children>
+</AnchorPane>

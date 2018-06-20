@@ -9,6 +9,7 @@ public class FSCollection {
         dest.size = size;
         dest.events = new FSEvent[size];
         for(int i = 0; i < size; i ++){
+            dest.events[i] = new FSEvent();
             events[i].copyTo(dest.events[i]);
 
         }

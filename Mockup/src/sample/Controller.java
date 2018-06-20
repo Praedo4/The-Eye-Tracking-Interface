@@ -6,6 +6,10 @@ import javafx.collections.ObservableList;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.stage.Stage;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -61,7 +65,7 @@ public class Controller {
     int mode;
     boolean clean, durationDisplay = false;
     final int RAW = 0, EVENTS = 1, TET = 2;
-    int selectedTextID = -1;
+    int selectedTextID = -1, selectedUserID = -1;
     long durationLeft = 0;
     int idtDispersion, idtDuration;
     boolean isIDT = false;
@@ -143,10 +147,12 @@ public class Controller {
                 if(mode == RAW) {
                     fileName = "data/split_raw_data/p" + newValue + "_" + textList.getSelectionModel().getSelectedItem() + "_ET.txt";
                     //label.setText(fileName);
+                    selectedUserID = Integer.parseInt(newValue);
                 }
                 else if (mode == EVENTS){
                     fileName = "data/split_aggregated_data/p" + newValue + "_" + textList.getSelectionModel().getSelectedItem() + "_FS.txt";
                    // label.setText(fileName);
+                   selectedUserID = Integer.parseInt(newValue);
                 }
             }
         });
@@ -489,16 +495,39 @@ public class Controller {
 
     }
 
-    private void extractFeatures(){
-        int lineSaccades = 0;
-        for(int i  = 1 ; i < eventData.size; i ++){
-            double xdist = eventData.events[i].x - eventData.events[i-1].x;
-            double ydist = eventData.events[i].y - eventData.events[i-1].y;
-            double distSq = xdist*xdist + ydist*ydist;
-            if (distSq > 100000 && ydist / xdist < 0.05)
-                lineSaccades++;
+    public void startNewForm() {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("features.fxml"));
+            FeatureController fc = new FeatureController();
+            fc.receiveParameters(selectedUserID,selectedTextID,eventData);
+            fxmlLoader.setController(fc);
+            Parent root = fxmlLoader.load();
+            Stage stage = new Stage();
+
+            stage.setTitle("Feature Extraction Interface");
+            stage.setScene(new Scene(root, 1000, 900));
+            stage.setResizable(false);
+            stage.show();
+            System.out.printf("yay");
         }
-        lineSaccadesTextBox.setText(Integer.toString(lineSaccades));
+        catch (Exception e){
+
+            System.out.printf("nay");
+        }
+    }
+
+    private void extractFeatures() {
+
+        //int lineSaccades = 0;
+        //for(int i  = 1 ; i < eventData.size; i ++){
+        //    double xdist = eventData.events[i].x - eventData.events[i-1].x;
+        //    double ydist = eventData.events[i].y - eventData.events[i-1].y;
+        //    double distSq = xdist*xdist + ydist*ydist;
+        //    if (distSq > 100000 && ydist / xdist < 0.03)
+        //        lineSaccades++;
+        //}
+        //lineSaccadesTextBox.setText(Integer.toString(lineSaccades));
+        startNewForm();
 
     }
 

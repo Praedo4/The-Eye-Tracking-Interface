@@ -194,16 +194,6 @@
                   <Font name="Rockwell" size="24.0" />
                </font>
             </TextField>
-            <Label layoutX="570.0" layoutY="802.0" prefHeight="44.0" prefWidth="161.0" text="Line saccades">
-               <font>
-                  <Font name="Rockwell" size="24.0" />
-               </font>
-            </Label>
-            <TextField fx:id="lineSaccadesTextBox" layoutX="732.0" layoutY="802.0" onAction="#setMinGapSize" onKeyTyped="#setMinGapSize" prefHeight="51.0" prefWidth="116.0">
-               <font>
-                  <Font name="Rockwell" size="24.0" />
-               </font>
-            </TextField>
          </children>
       </Pane>
    </children>
