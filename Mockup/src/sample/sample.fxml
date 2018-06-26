@@ -153,12 +153,12 @@
                   <Font name="Rockwell" size="24.0" />
                </font>
             </Label>
-            <TextField fx:id="sgolayLengthTextBox" layoutX="1101.0" layoutY="551.0" onAction="#setSgolayLength" onKeyTyped="#setIdtDuration" prefHeight="51.0" prefWidth="209.0" promptText="Enter minimum duration value (in number of samples) that will be used in i-DT event detection algorithm" text="25">
+            <TextField fx:id="sgolayLengthTextBox" layoutX="1101.0" layoutY="551.0" onAction="#setSgolayLength" onKeyTyped="#setSgolayLength" prefHeight="51.0" prefWidth="209.0" promptText="Enter minimum duration value (in number of samples) that will be used in i-DT event detection algorithm" text="25">
                <font>
                   <Font name="Rockwell" size="24.0" />
                </font>
             </TextField>
-            <TextField fx:id="sgolayOrderTextBox" layoutX="1101.0" layoutY="447.0" onAction="#setSgolayOrder" onKeyTyped="#setIdtDispersion" prefHeight="51.0" prefWidth="209.0" promptText="Enter maximum duration value (in pixels) that will be used for i-DT event detection algorithm" text="1">
+            <TextField fx:id="sgolayOrderTextBox" layoutX="1101.0" layoutY="447.0" onAction="#setSgolayOrder" onKeyTyped="#setSgolayOrder" prefHeight="51.0" prefWidth="209.0" promptText="Enter maximum duration value (in pixels) that will be used for i-DT event detection algorithm" text="1">
                <font>
                   <Font name="Rockwell" size="24.0" />
                </font>

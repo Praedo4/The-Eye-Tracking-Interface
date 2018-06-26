@@ -9,8 +9,9 @@ import java.util.Map;
 
 public class ETReader {
 
-    public final int TIMESTAMP = 0, DURATION = 1, POS_L_X = 21, POS_L_Y = 22, POS_R_X = 23, POS_R_Y = 24,  EVENT_TYPE = 54, STIMULUS_ID = 58, MODE_AVERAGE = 111, MODE_ONLY_LEFT = 112, MODE_ONLY_RIGHT = 113;
+    public final int TIMESTAMP = 0, DURATION = 1, POS_L_X = 21, POS_L_Y = 22, POS_R_X = 23, POS_R_Y = 24, DIA_L = 9, DIA_R = 12, EVENT_TYPE = 54, STIMULUS_ID = 58, MODE_AVERAGE = 111, MODE_ONLY_LEFT = 112, MODE_ONLY_RIGHT = 113;
     public int mode = MODE_AVERAGE;
+    public boolean REMOVE_NEGATIVES = true;
 
     public GazePoint[] readGazePoint(String line){
         String[] words = line.split("\\s");
@@ -19,11 +20,12 @@ public class ETReader {
                 return null;
             double l_x = Double.parseDouble(words[POS_L_X]), l_y = Double.parseDouble(words[POS_L_Y]);
             double r_x = Double.parseDouble(words[POS_R_X]), r_y = Double.parseDouble(words[POS_R_Y]);
+            double l_d = Double.parseDouble(words[DIA_L]), r_d = Double.parseDouble(words[DIA_R]);
             long timestamp = Long.parseLong(words[TIMESTAMP]);
             int duration = DURATION;
             GazePoint[] pts = new GazePoint[2];
-            pts[0]= new GazePoint(l_x,l_y,timestamp,duration);
-            pts[1] = new GazePoint(r_x,r_y,timestamp,duration);
+            pts[0]= new GazePoint(l_x,l_y,timestamp,duration,l_d);
+            pts[1] = new GazePoint(r_x,r_y,timestamp,duration,r_d);
             return pts;
         }
         return null;
@@ -37,7 +39,7 @@ public class ETReader {
             long timestamp = 100;
             int duration = DURATION;
 
-            return new GazePoint(x,y,timestamp, duration);
+            return new GazePoint(x,y,timestamp, duration, 0);
         }
         return null;
     }
@@ -50,7 +52,7 @@ public class ETReader {
             GazePoint leftPt = left.get(i), rightPt = right.get(j);
             GazePoint pt;
             if(leftPt.timestamp == rightPt.timestamp){
-                pt = new GazePoint((leftPt.x + rightPt.x)/2.0, (leftPt.y + rightPt.y)/2.0,leftPt.timestamp, leftPt.duration);
+                pt = new GazePoint((leftPt.x + rightPt.x)/2.0, (leftPt.y + rightPt.y)/2.0,leftPt.timestamp, leftPt.duration, (leftPt.pupil_diameter + rightPt.pupil_diameter)/2.0);
                 i++;
                 j++;
             }
@@ -62,7 +64,8 @@ public class ETReader {
                 pt = rightPt;
                 j++;
             }
-            gazePoints.add(pt);
+            if(!REMOVE_NEGATIVES || pt.x > 0 && pt.y > 0)
+                gazePoints.add(pt);
         }
         return gazePoints;
     }

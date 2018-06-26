@@ -9,6 +9,7 @@ public class ETCollection {
         dest.size = size;
         dest.gazePoints = new GazePoint[size];
         for(int i = 0; i < size; i ++){
+            dest.gazePoints[i] = new GazePoint();
             gazePoints[i].copyTo(dest.gazePoints[i]);
 
         }

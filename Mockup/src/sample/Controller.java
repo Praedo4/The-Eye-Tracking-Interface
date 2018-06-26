@@ -399,9 +399,10 @@ public class Controller {
                 for(int j = 1; j <= missingSamples; j++){
                     double newX = prevPt.x + (pt.x - prevPt.x) * (j * 1.0 / missingSamples);
                     double newY = prevPt.y + (pt.y - prevPt.y) * (j * 1.0 / missingSamples);
+                    double newDiameter = prevPt.pupil_diameter + (pt.pupil_diameter - prevPt.pupil_diameter) * (j * 1.0 / missingSamples);
                     long newTimestamp = prevPt.timestamp + 15000 * j;
                     long newDuration = 15000;
-                    GazePoint newPt = new GazePoint(newX,newY,newTimestamp,newDuration);
+                    GazePoint newPt = new GazePoint(newX,newY,newTimestamp,newDuration,newDiameter);
                     newRawData[i + missingSamplesAdded] = newPt;
                     missingSamplesAdded++;
                     println("Added #"+missingSamplesAdded + "at (" + newX + "," + newY + ") ts:" + newTimestamp + " duration: " + newDuration);
@@ -499,7 +500,7 @@ public class Controller {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("features.fxml"));
             FeatureController fc = new FeatureController();
-            fc.receiveParameters(selectedUserID,selectedTextID,eventData);
+            fc.receiveParameters(selectedUserID,selectedTextID,eventData,rawData);
             fxmlLoader.setController(fc);
             Parent root = fxmlLoader.load();
             Stage stage = new Stage();
