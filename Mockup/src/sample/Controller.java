@@ -8,6 +8,10 @@ import javafx.fxml.FXML;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -49,8 +53,10 @@ public class Controller {
     @FXML private TextField timeMissingTextBox;
     @FXML private TextField timeMissingSamplesTextBox;
     @FXML private TextField lineSaccadesTextBox;
+    @FXML private TextField outliersTextBox,outliersProportionTextBox;
     @FXML private CheckBox interpolationCheckBox;
     @FXML private CheckBox sgolayCheckBox;
+    @FXML private CheckBox cleanOutliersCheckBox;
     @FXML private Slider speedSlider;
     private GraphicsContext gc;
     private Random randomNum;
@@ -68,9 +74,9 @@ public class Controller {
     int selectedTextID = -1, selectedUserID = -1;
     long durationLeft = 0;
     int idtDispersion, idtDuration;
-    boolean isIDT = false;
+    boolean isIDT = false, cleanOutliers = false;
     Map<Integer, String> imageFilenames;
-    int minGapSize = 3, maxGapSize = 10; boolean interpolation = false, sgolay = false; int sgolayOrder = 1, sgolayLength = 25;
+    int minGapSize = 3, maxGapSize = 10; boolean interpolation = false, sgolay = false; int sgolayOrder = 1, sgolayLength = 25, bb_x = 320, bb_y = 90, bb_w = 650, bb_h = 300, totalMissingSamples;
     double speed = 2.0;
 
     public void println(String text){
@@ -197,6 +203,10 @@ public class Controller {
         startVisualization();
     }
 
+    public boolean withinBoundingBox(double x, double y){
+        return (x >= bb_x && y >= bb_y && x<= (bb_x + bb_w) && y <= (bb_y + bb_h));
+    }
+
     public void startVisualization(){
         if(tm != null){
             tm.cancel();
@@ -206,6 +216,8 @@ public class Controller {
         index = 0;
         if(sgolay)index=1;
         clearScreen();
+        gc.setStroke(Color.BLACK);
+        gc.strokeRect(bb_x,bb_y,bb_w,bb_h);
         long interval = Math.round(20.0 / speed);
         if (isIDT){
             TimerTask task = new TimerTask() {
@@ -261,6 +273,10 @@ public class Controller {
         else if(mode == RAW) {
             ETReader etReader = new ETReader();
             rawData = etReader.readETCollection(fileName);
+            countOutliers();
+            if(cleanOutliers)
+                rawData = cutOutliers(rawData);
+            countMissingData();
             if(interpolation)
                 runInterpolation();
             TimerTask task = new TimerTask() {
@@ -278,6 +294,10 @@ public class Controller {
                     index++;
                     if(clean && !withinScreen(x,y))
                         return;
+                    if(withinBoundingBox(x,y))
+                        gc.setStroke(Color.BLACK);
+                    else
+                        gc.setStroke(Color.RED);
                     gc.strokeOval(x, y, w, h);
                 }
 
@@ -367,6 +387,23 @@ public class Controller {
         }
     }
 
+    public void countMissingData(){
+        totalMissingSamples = 0;
+        long totalTime = 0;
+        for (int i = 1; i < rawData.size; i++){
+            GazePoint pt = rawData.gazePoints[i];
+            GazePoint prevPt = rawData.gazePoints[i-1];
+            int missingSamples = (int)(pt.timestamp - prevPt.timestamp) / 15000;
+            if (missingSamples > minGapSize && missingSamples < maxGapSize)
+                totalMissingSamples += missingSamples;
+
+            if(missingSamples > minGapSize)
+                totalTime += pt.timestamp - prevPt.timestamp;
+        }
+        timeMissingTextBox.setText(Double.toString(Math.round(totalTime / 1000.0)/1000.0));
+        timeMissingSamplesTextBox.setText(Integer.toString(totalMissingSamples));
+    }
+
     public void runInterpolation(){
         int totalMissingSamples = 0;
         long totalTime = 0;
@@ -375,10 +412,7 @@ public class Controller {
             GazePoint prevPt = rawData.gazePoints[i-1];
             int missingSamples = (int)(pt.timestamp - prevPt.timestamp) / 15000;
             if (missingSamples > minGapSize && missingSamples < maxGapSize){
-                //List<> newRawData
-                //for(int j = 0; j < missingSamples; j ++){
-                //    rawData.gazePoints.
-                //}
+
                 println("Missing samples: " + missingSamples);
                 totalMissingSamples += missingSamples;
             }
@@ -386,22 +420,22 @@ public class Controller {
                 totalTime += pt.timestamp - prevPt.timestamp;
         }
         println("Total missing samples: " + totalMissingSamples);
-        timeMissingTextBox.setText(Long.toString(totalTime / 1000));
-        timeMissingSamplesTextBox.setText(Integer.toString(totalMissingSamples));
         GazePoint[] newRawData = new GazePoint[rawData.size + totalMissingSamples];
         int missingSamplesAdded  = 0;
         newRawData[0] = rawData.gazePoints[0];
         for (int i = 1; i < rawData.size; i++){
             GazePoint pt = rawData.gazePoints[i];
             GazePoint prevPt = rawData.gazePoints[i-1];
-            int missingSamples = (int)(pt.timestamp - prevPt.timestamp) / 15000;
+            long gapSize = pt.timestamp - prevPt.timestamp ;
+            int missingSamples = (int)(gapSize / 15000);
             if (missingSamples > minGapSize && missingSamples < maxGapSize){
                 for(int j = 1; j <= missingSamples; j++){
+                    int sampleDuration = (int)(gapSize / missingSamples);
                     double newX = prevPt.x + (pt.x - prevPt.x) * (j * 1.0 / missingSamples);
                     double newY = prevPt.y + (pt.y - prevPt.y) * (j * 1.0 / missingSamples);
                     double newDiameter = prevPt.pupil_diameter + (pt.pupil_diameter - prevPt.pupil_diameter) * (j * 1.0 / missingSamples);
-                    long newTimestamp = prevPt.timestamp + 15000 * j;
-                    long newDuration = 15000;
+                    long newTimestamp = prevPt.timestamp + sampleDuration * j;
+                    long newDuration = sampleDuration;
                     GazePoint newPt = new GazePoint(newX,newY,newTimestamp,newDuration,newDiameter);
                     newRawData[i + missingSamplesAdded] = newPt;
                     missingSamplesAdded++;
@@ -416,6 +450,14 @@ public class Controller {
 
     }
 
+    public void startDrag(MouseEvent event){
+       //bb_x  = (int)event.getX();
+       //bb_y = (int)event.getY();
+       //gc.setStroke(Color.BLACK);
+       //gc.strokeRect(bb_x,bb_y,bb_w,bb_h);
+       //println(Integer.toString(bb_x) + "," + Integer.toString(bb_y));
+    }
+
     public void runEventDetection(){
         // Create lists of timestamps, xs and ys
         //if(mode != RAW){
@@ -424,6 +466,10 @@ public class Controller {
             setClean();
             ETReader etReader = new ETReader();
             rawData = etReader.readETCollection(fileName);
+            countOutliers();
+            if(cleanOutliers)
+                rawData = cutOutliers(rawData);
+            countMissingData();
             if(interpolation)
                 runInterpolation();
         //}
@@ -532,6 +578,33 @@ public class Controller {
 
     }
 
+    private void countOutliers(){
+        int outliers = 0;
+        for(GazePoint sample : rawData.gazePoints){
+            if (!withinBoundingBox(sample.x, sample.y))
+                outliers ++;
+        }
+        outliersTextBox.setText(Integer.toString(outliers));
+        outliersProportionTextBox.setText(Double.toString(Math.round(outliers / (0.0001*rawData.size))/100.0));
+    }
+
+    private ETCollection cutOutliers(ETCollection data){
+
+        ETCollection result = new ETCollection();
+        ArrayList <GazePoint> samplesWithinBB = new ArrayList<GazePoint>();
+        int outliers = 0;
+        for(GazePoint sample : data.gazePoints){
+            if (withinBoundingBox(sample.x, sample.y))
+                samplesWithinBB.add(sample);
+            else
+                outliers ++;
+        }
+
+        GazePoint[] samplesArray = (GazePoint[])samplesWithinBB.toArray(new GazePoint[samplesWithinBB.size()]);
+        result.initialize(samplesArray);
+        return result;
+    }
+
     private void showEventVisualizationControls(int op){
         dispersionRadioButton.setOpacity(op);
         durationRadioButton.setOpacity(op);
@@ -573,6 +646,10 @@ public class Controller {
 
     public void setClean(){
         clean = cleanCheckBox.isSelected();
+    }
+
+    public void setCleanOutliers(){
+        cleanOutliers = cleanOutliersCheckBox.isSelected();
     }
 
     public void setIdtDispersion(){

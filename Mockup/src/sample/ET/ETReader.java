@@ -13,9 +13,10 @@ public class ETReader {
     public int mode = MODE_AVERAGE;
     public boolean REMOVE_NEGATIVES = true;
 
+
     public GazePoint[] readGazePoint(String line){
         String[] words = line.split("\\s");
-        if(words[EVENT_TYPE].compareTo("Fixation") == 0 && words.length > STIMULUS_ID ){
+        if(words[EVENT_TYPE].compareTo("Blink") != 0 && words.length > STIMULUS_ID ){
             if(words[STIMULUS_ID].length() < 1 || Integer.parseInt(words[STIMULUS_ID]) < 2)
                 return null;
             double l_x = Double.parseDouble(words[POS_L_X]), l_y = Double.parseDouble(words[POS_L_Y]);
@@ -85,8 +86,8 @@ public class ETReader {
             while((line = bufferedReader.readLine()) != null){
                 GazePoint[] pts = readGazePoint(line);
                 if(pts != null){
-                    l_gazePoints.add(pts[0]);
-                    r_gazePoints.add(pts[1]);
+                   l_gazePoints.add(pts[0]);
+                   r_gazePoints.add(pts[1]);
                 }
             }
             switch(mode){
@@ -149,6 +150,7 @@ public class ETReader {
         return null;
 
     }
+
 
    //public void fixOffset(String fileName, Map<Integer, String> imageFilenames){
    //    try {
