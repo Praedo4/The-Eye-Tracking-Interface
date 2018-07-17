@@ -80,7 +80,7 @@ public class ETReader {
             FileReader fileReader = new FileReader(fileName);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
 
-            System.out.println("Reader initalized"); // File open
+            //System.out.println("Reader initalized"); // File open
 
             String line = null;
             while((line = bufferedReader.readLine()) != null){
@@ -105,7 +105,7 @@ public class ETReader {
             }
             GazePoint[] data = (GazePoint[])gazePoints.toArray(new GazePoint[gazePoints.size()]);
             collection.initialize(data);
-            System.out.println("Reading complete; Collection size: " + data.length); // File read
+            //System.out.println("Reading complete; Collection size: " + data.length); // File read
             return collection;
 
         }

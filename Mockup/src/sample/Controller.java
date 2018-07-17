@@ -8,18 +8,13 @@ import javafx.fxml.FXML;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import javafx.stage.FileChooser;
-import org.rosuda.JRI.*;
 import sample.ET.ETCollection;
 import sample.ET.ETReader;
 import sample.ET.GazePoint;
@@ -37,13 +32,10 @@ public class Controller {
     @FXML private Canvas surface;
     @FXML private RadioButton eventsRadioButton;
     @FXML private RadioButton gazePointsRadioButton;
-    @FXML private RadioButton tetRadioButton;
     @FXML private RadioButton dispersionRadioButton;
     @FXML private RadioButton durationRadioButton;
-    @FXML private CheckBox cleanCheckBox;
     @FXML private ListView<String> userList;
     @FXML private ListView<Integer> textList;
-    @FXML private Label visualizationLabel;
     @FXML private TextField dispersionTextBox;
     @FXML private TextField durationTextBox;
     @FXML private TextField minGapSizeTextBox;
@@ -58,26 +50,25 @@ public class Controller {
     @FXML private CheckBox sgolayCheckBox;
     @FXML private CheckBox cleanOutliersCheckBox;
     @FXML private Slider speedSlider;
+    @FXML private Button calculateMeasuresButton;
     private GraphicsContext gc;
     private Random randomNum;
     private Timer tm;
-    Rengine re;
-    //private FileReader fr;
-    //private BufferedReader br;
     int index = 0;
     String fileName = "data/raw_data/p01_ET_samples.txt";
     private ETCollection rawData;
     private FSCollection eventData;
     int mode;
-    boolean clean, durationDisplay = false;
+    boolean durationDisplay = false;
     final int RAW = 0, EVENTS = 1, TET = 2;
     int selectedTextID = -1, selectedUserID = -1;
     long durationLeft = 0;
     int idtDispersion, idtDuration;
     boolean isIDT = false, cleanOutliers = false;
     Map<Integer, String> imageFilenames;
-    int minGapSize = 3, maxGapSize = 10; boolean interpolation = false, sgolay = false; int sgolayOrder = 1, sgolayLength = 25, bb_x = 320, bb_y = 90, bb_w = 650, bb_h = 300, totalMissingSamples;
+    int minGapSize = 3, maxGapSize = 10; boolean interpolation = false, sgolay = false; int sgolayOrder = 2, sgolayLength = 5, bb_x = 320, bb_y = 90, bb_w = 650, bb_h = 300, totalMissingSamples;
     double speed = 2.0;
+    SignalProcessing signalProcessing;
 
     public void println(String text){
         System.out.println(text);
@@ -125,14 +116,14 @@ public class Controller {
     }
 
     public void initialize() {
-        //label.setText(fileName);
         gc = surface.getGraphicsContext2D();
         randomNum = new Random();
         changeDataMode();
-        setClean();
         readImages();
         setIdtDispersion();
         setIdtDuration();
+        setSgolayLength();
+        setSgolayOrder();
 
         ListView<String> list = new ListView<String>();
         File folder = new File("data/raw_data");
@@ -171,13 +162,9 @@ public class Controller {
                 selectedTextID = newValue;
                 if(mode == RAW) {
                     fileName = "data/split_raw_data/p" + userList.getSelectionModel().getSelectedItem() + "_" + newValue + "_ET.txt";
-                    //label.setText(fileName);
                 }
                 else if (mode == EVENTS){
                     fileName = "data/split_aggregated_data/p" + userList.getSelectionModel().getSelectedItem() + "_" + newValue + "_FS.txt";
-                    //
-                    //
-                    // label.setText(fileName);
                 }
             }
         });
@@ -185,21 +172,40 @@ public class Controller {
         speedSlider.valueProperty().addListener((obs, oldVal,newVal) ->
             speed = newVal.doubleValue());
 
-        String args[] = null;
-        re=new Rengine(args, false, new TextConsole());
-        re.eval("require(emov)");
+        signalProcessing = new SignalProcessing();
+
         durationRadioButton.setSelected(true);
         userList.getSelectionModel().select(0);
         textList.getSelectionModel().select(0);
         durationDisplay = true;
 
 
+
+    }
+
+    private void readAndProcessRawData(){
+        ETReader etReader = new ETReader();
+        rawData = etReader.readETCollection(fileName);
+        countOutliers();
+        if (cleanOutliers)
+            rawData = signalProcessing.cutOutliers(rawData,bb_x,bb_y,bb_w,bb_h);
+        countMissingData();
+        if (interpolation)
+            rawData = signalProcessing.runInterpolation(rawData,minGapSize,maxGapSize);
+        if(sgolay)
+            rawData = signalProcessing.applySavitzkyGolayFilter(rawData,sgolayOrder,sgolayLength);
     }
 
     public void startButtonClick(){
         changeDataMode();
-        setClean();
         isIDT = false;
+        if(mode == RAW) {
+            readAndProcessRawData();
+        }
+        else if(mode == EVENTS){
+            FSReader fsReader = new FSReader();
+            eventData = fsReader.readFSCollection(fileName);
+        }
         startVisualization();
     }
 
@@ -233,20 +239,23 @@ public class Controller {
                         return;
                     }
                     FSEvent event = eventData.events[index];
-                    if(clean && !withinScreen(event.x,event.y)){
-                        index++;
-                        return;
-                    }
+
                     if(event.type == event.FIXATION){
                         //println(( Long.toString(event.duration)));
                         double disp = 1 + event.duration / 20000.0;
                         durationLeft = event.duration / 20000;
                         if(index != 0){
                             FSEvent prevEvent = eventData.events[index-1];
-                            if(!clean || (withinScreen(event.x,event.y) && withinScreen(prevEvent.x, prevEvent.y)))
-                                gc.strokeLine( prevEvent.x, prevEvent.y, event.x, event.y);
+                            gc.setStroke(Color.BLACK);
+                            gc.strokeLine( prevEvent.x, prevEvent.y, event.x, event.y);
 
                         }
+                        if(event.x > 800)
+                            gc.setStroke(Color.BLUE);
+                        else if (event.x < 500)
+                            gc.setStroke(Color.GREEN);
+                        else
+                            gc.setStroke(Color.BLACK);
                         if(durationDisplay) {
                             gc.strokeOval(event.x - disp / 2, event.y - disp / 2, disp, disp);
                         }
@@ -255,10 +264,7 @@ public class Controller {
                         }
                     }
                     else if(event.type == event.SACCADE){
-                        if(clean && !withinScreen(event.x2,event.y2)){
-                            index++;
-                            return;
-                        }
+                        gc.setStroke(Color.BLACK);
                         gc.strokeLine(event.x, event.y, event.x2, event.y2);
                     }
                     else{
@@ -271,14 +277,6 @@ public class Controller {
             tm.schedule(task,interval,interval);
         }
         else if(mode == RAW) {
-            ETReader etReader = new ETReader();
-            rawData = etReader.readETCollection(fileName);
-            countOutliers();
-            if(cleanOutliers)
-                rawData = cutOutliers(rawData);
-            countMissingData();
-            if(interpolation)
-                runInterpolation();
             TimerTask task = new TimerTask() {
                 public void run() {
                     if(index >= rawData.size){
@@ -292,8 +290,6 @@ public class Controller {
                     double x = pt.x;
                     double y = pt.y;
                     index++;
-                    if(clean && !withinScreen(x,y))
-                        return;
                     if(withinBoundingBox(x,y))
                         gc.setStroke(Color.BLACK);
                     else
@@ -305,8 +301,6 @@ public class Controller {
             tm.schedule(task,interval,interval);
         }
         else if (mode == EVENTS){
-            FSReader fsReader = new FSReader();
-            eventData = fsReader.readFSCollection(fileName);
             TimerTask task = new TimerTask() {
                 public void run() {
                     if(durationLeft != 0) {
@@ -320,18 +314,13 @@ public class Controller {
                         return;
                     }
                     FSEvent event = eventData.events[index];
-                    if(clean && !withinScreen(event.x,event.y)){
-                        index++;
-                        return;
-                    }
                     if(event.type == event.FIXATION){
                         //println(( Long.toString(event.duration)));
                         double disp = 1 + event.duration / 20000.0;
                         durationLeft = event.duration / 20000;
                         if(index != 0){
                             FSEvent prevEvent = eventData.events[index-1];
-                            if(!clean || (withinScreen(event.x,event.y) && withinScreen(prevEvent.x, prevEvent.y)))
-                                gc.strokeLine( prevEvent.x, prevEvent.y, event.x, event.y);
+                            gc.strokeLine( prevEvent.x, prevEvent.y, event.x, event.y);
 
                         }
                         if(durationDisplay) {
@@ -342,10 +331,6 @@ public class Controller {
                         }
                     }
                     else if(event.type == event.SACCADE){
-                        if(clean && !withinScreen(event.x2,event.y2)){
-                            index++;
-                            return;
-                        }
                         gc.strokeLine(event.x, event.y, event.x2, event.y2);
                     }
                     else{
@@ -377,8 +362,6 @@ public class Controller {
                     double x = pt.x;
                     double y = pt.y;
                     index++;
-                    if(clean && !withinScreen(x,y))
-                        return;
                     gc.strokeOval(x, y, w, h);
                 }
 
@@ -404,143 +387,6 @@ public class Controller {
         timeMissingSamplesTextBox.setText(Integer.toString(totalMissingSamples));
     }
 
-    public void runInterpolation(){
-        int totalMissingSamples = 0;
-        long totalTime = 0;
-        for (int i = 1; i < rawData.size; i++){
-            GazePoint pt = rawData.gazePoints[i];
-            GazePoint prevPt = rawData.gazePoints[i-1];
-            int missingSamples = (int)(pt.timestamp - prevPt.timestamp) / 15000;
-            if (missingSamples > minGapSize && missingSamples < maxGapSize){
-
-                println("Missing samples: " + missingSamples);
-                totalMissingSamples += missingSamples;
-            }
-            if(missingSamples > minGapSize)
-                totalTime += pt.timestamp - prevPt.timestamp;
-        }
-        println("Total missing samples: " + totalMissingSamples);
-        GazePoint[] newRawData = new GazePoint[rawData.size + totalMissingSamples];
-        int missingSamplesAdded  = 0;
-        newRawData[0] = rawData.gazePoints[0];
-        for (int i = 1; i < rawData.size; i++){
-            GazePoint pt = rawData.gazePoints[i];
-            GazePoint prevPt = rawData.gazePoints[i-1];
-            long gapSize = pt.timestamp - prevPt.timestamp ;
-            int missingSamples = (int)(gapSize / 15000);
-            if (missingSamples > minGapSize && missingSamples < maxGapSize){
-                for(int j = 1; j <= missingSamples; j++){
-                    int sampleDuration = (int)(gapSize / missingSamples);
-                    double newX = prevPt.x + (pt.x - prevPt.x) * (j * 1.0 / missingSamples);
-                    double newY = prevPt.y + (pt.y - prevPt.y) * (j * 1.0 / missingSamples);
-                    double newDiameter = prevPt.pupil_diameter + (pt.pupil_diameter - prevPt.pupil_diameter) * (j * 1.0 / missingSamples);
-                    long newTimestamp = prevPt.timestamp + sampleDuration * j;
-                    long newDuration = sampleDuration;
-                    GazePoint newPt = new GazePoint(newX,newY,newTimestamp,newDuration,newDiameter);
-                    newRawData[i + missingSamplesAdded] = newPt;
-                    missingSamplesAdded++;
-                    println("Added #"+missingSamplesAdded + "at (" + newX + "," + newY + ") ts:" + newTimestamp + " duration: " + newDuration);
-                }
-            }
-            newRawData[i + missingSamplesAdded] = rawData.gazePoints[i];
-        }
-        rawData.initialize(newRawData);
-        println("Interpolation complete");
-
-
-    }
-
-    public void startDrag(MouseEvent event){
-       //bb_x  = (int)event.getX();
-       //bb_y = (int)event.getY();
-       //gc.setStroke(Color.BLACK);
-       //gc.strokeRect(bb_x,bb_y,bb_w,bb_h);
-       //println(Integer.toString(bb_x) + "," + Integer.toString(bb_y));
-    }
-
-    public void runEventDetection(){
-        // Create lists of timestamps, xs and ys
-        //if(mode != RAW){
-            gazePointsRadioButton.setSelected(true);
-            changeDataMode();
-            setClean();
-            ETReader etReader = new ETReader();
-            rawData = etReader.readETCollection(fileName);
-            countOutliers();
-            if(cleanOutliers)
-                rawData = cutOutliers(rawData);
-            countMissingData();
-            if(interpolation)
-                runInterpolation();
-        //}
-
-        int n = rawData.size;
-        int [] timestamps = new int [n];
-        long timeStampStart;
-        double xs[] = new double[n],ys[] = new double[n];
-        timeStampStart = rawData.gazePoints[0].timestamp;
-        for(int i = 0 ; i < n-6; i++){
-            GazePoint pt = rawData.gazePoints[i];
-            timestamps[i] = (int) (pt.timestamp - timeStampStart);
-            xs[i] = pt.x;
-            ys[i] = pt.y;
-        }
-
-        REXP rResult;
-        // Pass the data to R
-        if(re.assign("ts",timestamps) && re.assign("xs",xs) && re.assign("ys", ys)){
-            // Run IDT
-            if(sgolay) { // Run Savitzky-Golay smoothing filter
-                rResult = re.eval("library(signal, warn.conflicts = FALSE)");
-                //Result = re.eval("");
-                //re.assign("sg1",rResult);
-                rResult = re.eval("print(xs)");
-                //rResult = re.eval("print(sg1)");
-                rResult = re.eval("filter(sgolay(p=" + sgolayOrder + ", n=" + sgolayLength + ", m=0), xs)");
-                if (rResult == null) {
-                    re.eval("install.packages(\'signal\')");
-                    rResult = re.eval("require(signal)");
-                    rResult = re.eval("filter(sgolay(p=1, n=25, m=0), xs)");
-                }
-                re.assign("xs", rResult);
-                rResult = re.eval("filter(sgolay(p=1, n=25, m=0), ys)");
-                re.assign("ys", rResult);
-            }
-            String callIDT = "emov.idt(ts,xs,ys," + idtDispersion + "," + idtDuration + ")";
-            rResult = re.eval(callIDT);
-            if(rResult == null){
-                println("rJava and/or emov package are missing. Launching installation process");
-                re.eval("install.packages(\'rJava\')");
-                re.eval("install.packages(\'emov\')");
-                rResult = re.eval(callIDT);
-            }
-            // Get the data back from R
-            RList l = rResult.asList();
-            int starts[] = l.at(0).asIntArray();
-            int ends[] = l.at(1).asIntArray();
-            int durs[] = l.at(2).asIntArray();
-            double out_xs[] = l.at(3).asDoubleArray();
-            double out_ys[] = l.at(4).asDoubleArray();
-            // Parse the data
-            int numberOfFixations = starts.length;
-            FSEvent[] fsData = new FSEvent[numberOfFixations];
-            for(int i = 0; i < numberOfFixations; i++){
-                System.out.printf("Fixation #%d: starts at %d ends at %d (duration: %d) at position (%f, %f)\n",i+1,starts[i],ends[i],durs[i],out_xs[i],out_ys[i]);
-                eventData = new FSCollection();
-                fsData[i] = new FSEvent(out_xs[i],out_ys[i],1,1,timeStampStart + starts[i], timeStampStart + ends[i], durs[i], true);
-            }
-            eventData.initialize(fsData);
-            // Visualize the data
-            isIDT = true;
-            //showEventVisualizationControls(1);
-            extractFeatures();
-            startVisualization();
-        }
-        else{
-            println("Failed to assign data to R");
-        }
-
-    }
 
     public void startNewForm() {
         try {
@@ -555,25 +401,16 @@ public class Controller {
             stage.setScene(new Scene(root, 1000, 900));
             stage.setResizable(false);
             stage.show();
-            System.out.printf("yay");
+            System.out.printf("New form has been opened");
         }
         catch (Exception e){
 
-            System.out.printf("nay");
+            System.out.printf("New form could not be opened");
         }
     }
 
     private void extractFeatures() {
 
-        //int lineSaccades = 0;
-        //for(int i  = 1 ; i < eventData.size; i ++){
-        //    double xdist = eventData.events[i].x - eventData.events[i-1].x;
-        //    double ydist = eventData.events[i].y - eventData.events[i-1].y;
-        //    double distSq = xdist*xdist + ydist*ydist;
-        //    if (distSq > 100000 && ydist / xdist < 0.03)
-        //        lineSaccades++;
-        //}
-        //lineSaccadesTextBox.setText(Integer.toString(lineSaccades));
         startNewForm();
 
     }
@@ -588,50 +425,218 @@ public class Controller {
         outliersProportionTextBox.setText(Double.toString(Math.round(outliers / (0.0001*rawData.size))/100.0));
     }
 
-    private ETCollection cutOutliers(ETCollection data){
 
-        ETCollection result = new ETCollection();
-        ArrayList <GazePoint> samplesWithinBB = new ArrayList<GazePoint>();
-        int outliers = 0;
-        for(GazePoint sample : data.gazePoints){
-            if (withinBoundingBox(sample.x, sample.y))
-                samplesWithinBB.add(sample);
-            else
-                outliers ++;
+    public void calculateAllMeasures() throws IOException{
+
+        ETReader etReader = new ETReader();
+        FileWriter fileWriter = new FileWriter("measures.xls");
+        String [] columns = {"User ID","Text ID","Total Reading Time", "Scanpath Length", "Mean Pupil Dilation", "Pupillary Unrest Index", "Fixation Number", "Fixation Rate", "Mean Number Of Fixations Per Line","Number Of Line-to-line Saccades", "Number of Regressions", "Regression Rate", "Mean Number of Regressions Per Line",
+                "Fixation Duration Mean","Fixation Duration SD","Fixation Duration Variance","Fixation Duration Skewness","Fixation Duration Kurtosis",
+                "Fixation Dispersion Mean","Fixation Dispersion SD","Fixation Dispersion Variance","Fixation Dispersion Skewness","Fixation Dispersion Kurtosis",
+                "Saccade Duration Mean","Saccade Duration SD","Saccade Duration Variance","Saccade Duration Skewness","Saccade Duration Kurtosis",
+                "Saccade Amplitude Mean","Saccade Amplitude SD","Saccade Amplitude Variance","Saccade Amplitude Skewness","Saccade Amplitude Kurtosis",
+                "Saccade Mean Velocity Mean","Saccade Mean Velocity SD","Saccade Mean Velocity Variance","Saccade Mean Velocity Skewness","Saccade Mean Velocity Kurtosis"};
+        String headerLine = "User ID";
+        for(int i = 1; i < columns.length; i++)
+            headerLine += "\t" + columns[i];
+        fileWriter.write(headerLine+"\n");
+        for(int i = 0 ;  i < userList.getItems().size(); i++){
+            for(int j = 0; j < textList.getItems().size(); j++){
+                String user_id = userList.getItems().get(i), text_id = textList.getItems().get(j).toString();
+                String fileName = "data/split_raw_data/p" + user_id + "_" + text_id + "_ET.txt";
+                println("User ID: " + user_id + "\t Text ID: " + text_id);
+                if(user_id.compareTo("32") == 0)
+                {
+                    println("Hello");
+                }
+                ETCollection etdata = etReader.readETCollection(fileName);
+                if(etdata.size < 1000)
+                    continue;
+                if(cleanOutliersCheckBox.isSelected())
+                    etdata = signalProcessing.cutOutliers(etdata,bb_x,bb_y,bb_w,bb_h);
+                if(interpolationCheckBox.isSelected())
+                    etdata = signalProcessing.runInterpolation(etdata,minGapSize,maxGapSize);
+                if(sgolayCheckBox.isSelected())
+                    etdata = signalProcessing.applySavitzkyGolayFilter(etdata,sgolayOrder,sgolayLength);
+
+                FSCollection fsdata = signalProcessing.runEventDetection(etdata,idtDispersion,idtDuration);
+                if (fsdata == null)
+                    continue;
+                double features[] = calculateAllMeasuresForAText(etdata,fsdata);
+                if(features[7] < 10)
+                    continue;
+                //double features[] = {1.0,2.0,3.0};
+
+                fileWriter.write(user_id + "\t" + text_id);
+                for(int k = 0; k < features.length; k++)
+                    fileWriter.write("\t" + Double.toString(Math.round(features[k] * 100000000)/100000000.0));
+                fileWriter.write('\n');
+            }
+        }
+        fileWriter.close();
+    }
+
+    private double[] calculateAllMeasuresForAText(ETCollection etdata, FSCollection fsdata){
+        double featureVector[] =  new double[36];
+        int sample_number = etdata.size;
+        int fixation_number = fsdata.size;
+        int saccade_number = fixation_number - 1;
+        double fixation_durations[] = new double[fixation_number], fixation_dispersions[] = new double[fixation_number];
+        double saccade_amplitudes[] = new double[saccade_number], saccade_durations[] = new double[saccade_number], saccade_mean_velocities[] = new double[saccade_number];
+        double total_duration = 0, scanpath_length = 0;
+        int j = 0, left_side_fixations = 0, right_side_fixations = 0, number_of_lines = 0, cd = 0,number_of_regressions = 0;
+        for(int i = 0; i < fixation_number; i++){
+            //Fixation features
+            fixation_durations[i] = (fsdata.events[i].duration / 1000000.0);
+            fixation_dispersions[i] = fsdata.events[i].x2;
+
+            total_duration += fixation_durations[i];
+            // Saccade features
+            if(i!= fixation_number - 1){
+                double x_dist = fsdata.events[i+1].x - fsdata.events[i].x, y_dist = fsdata.events[i+1].y  - fsdata.events[i].y;
+                saccade_amplitudes[i] = Math.sqrt(x_dist*x_dist + y_dist*y_dist);
+                scanpath_length += saccade_amplitudes[i];
+                saccade_durations[i] = (fsdata.events[i+1].start - fsdata.events[i].end)/ 1000000.0;
+                total_duration += saccade_durations[i];
+                saccade_mean_velocities[i] = saccade_amplitudes[i] / saccade_durations[i];
+
+                if(y_dist < -30 || (x_dist < -50 && y_dist < 10))
+                    number_of_regressions ++;
+            }
+
+            if(fsdata.events[i].x > 800)
+                right_side_fixations ++;
+            else if(fsdata.events[i].x < 500)
+                left_side_fixations ++;
+
+            if(i > 5){
+                if(cd > 0)
+                    cd --;
+                if(fsdata.events[i-6].x > 800)
+                    right_side_fixations --;
+                else if(fsdata.events[i-6].x < 500)
+                    left_side_fixations --;
+            }
+
+            if(right_side_fixations >=3 && left_side_fixations >= 2){
+                number_of_lines ++;
+                cd = 5;
+            }
+        }
+        double [] fixation_duration_statistics = calculateStatistics(fixation_durations);
+        double [] fixation_dispersion_statistics = calculateStatistics(fixation_dispersions);
+        double fixation_rate = fixation_number / total_duration;
+        double fixation_per_line = fixation_number / (1.0* number_of_lines);
+
+        double [] saccade_amplitude_statistics = calculateStatistics(saccade_amplitudes);
+        double [] saccade_durations_statistics = calculateStatistics(saccade_durations);
+        double [] saccade_mean_velocity_statistics = calculateStatistics(saccade_mean_velocities);
+
+        double regression_rate = number_of_regressions / total_duration;
+        double mean_number_of_regressions_per_line = number_of_regressions / (1.0* number_of_lines);
+
+        // Pupillary
+        int lastCount = sample_number % 16, curCount = 16;
+        int numberOfBins = (sample_number + 15) / 16;
+        if(lastCount == 0)
+            lastCount = 16;
+        double averageDilation[] = new double [numberOfBins];
+        double curSum = 0;
+        double totalDilationSum = 0;
+        for(int i = 0; i < numberOfBins; i++) {
+            curCount = (i == (numberOfBins - 1) ? lastCount : 16);
+            curSum = 0;
+            for (int k = 0; k < curCount; k++) {
+                curSum += etdata.gazePoints[(i * 16) + k].pupil_diameter;
+                totalDilationSum += etdata.gazePoints[(i * 16) + k].pupil_diameter;
+            }
+            averageDilation[i] = curSum / curCount;
         }
 
-        GazePoint[] samplesArray = (GazePoint[])samplesWithinBB.toArray(new GazePoint[samplesWithinBB.size()]);
-        result.initialize(samplesArray);
+        double meanPupilDilation = totalDilationSum / sample_number;
+
+        double differenceSum = 0;
+        for(int i = 1; i < numberOfBins; i++){
+            differenceSum += Math.abs(averageDilation[i] - averageDilation[i-1]);
+        }
+        double pui = 1/((sample_number - 16)*(1/60.0)) * differenceSum;
+
+
+        featureVector[0] = total_duration;
+        featureVector[1] = scanpath_length;
+        featureVector[2] = meanPupilDilation;
+        featureVector[3] = pui;
+        featureVector[4] = fixation_number;
+        featureVector[5] = fixation_rate;
+        featureVector[6] = fixation_per_line;
+        featureVector[7] = number_of_lines;
+        featureVector[8] = number_of_regressions;
+        featureVector[9] = regression_rate;
+        featureVector[10] = mean_number_of_regressions_per_line;
+
+
+
+        for(int i = 0; i < 5; i++)
+            featureVector[11 + i] = fixation_duration_statistics[i];
+        for(int i = 0; i < 5; i++)
+            featureVector[16 + i] = fixation_dispersion_statistics[i];
+        for(int i = 0; i < 5; i++)
+            featureVector[21 + i] = saccade_durations_statistics[i];
+        for(int i = 0; i < 5; i++)
+            featureVector[26 + i] = saccade_amplitude_statistics[i];
+        for(int i = 0; i < 5; i++)
+            featureVector[31 + i] = saccade_mean_velocity_statistics[i];
+
+        return featureVector;
+    }
+
+    private double[] calculateStatistics(double [] distribution){
+        int n  =  distribution.length;
+        double dn = 1.0*n;
+        double sum = 0;
+        for(int i = 0; i < n; i++)
+            sum += distribution[i];
+        double mean = sum / dn;
+        double sum2 = 0, sum3 = 0, sum4 = 0, diff;
+        for (int i = 0; i < n; i++){
+             diff = (distribution[i] - mean);
+             sum2 += diff*diff;
+             sum3 += diff*diff*diff;
+             sum4 += diff*diff*diff*diff;
+        }
+        double var = sum2 / dn;
+        double sd = Math.sqrt(var);
+        double skewness = sum3 / Math.pow(sum2, 1.5);
+        double kurtosis = sum4 / (sum2*sum2);
+        double result[] = {mean, sd, var, skewness, kurtosis};
         return result;
     }
 
-    private void showEventVisualizationControls(int op){
-        dispersionRadioButton.setOpacity(op);
-        durationRadioButton.setOpacity(op);
-        cleanCheckBox.setOpacity(op);
-        visualizationLabel.setOpacity(op);
+    //////////////////////////////////////////////////////////////////////////////
+    //////////////////////////// UI Functions ////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
 
+    public void runEventDetection(){
+        gazePointsRadioButton.setSelected(true);
+        changeDataMode();
+
+        readAndProcessRawData();
+        eventData = signalProcessing.runEventDetection(rawData,idtDispersion,idtDuration);
+        isIDT = true;
+        extractFeatures();
+        startVisualization();
     }
+
 
     public void changeDataMode(){
         if(gazePointsRadioButton.isSelected()) {
             mode = RAW;
             fileName = "data/split_raw_data/p" + userList.getSelectionModel().getSelectedItem()+ "_" + textList.getSelectionModel().getSelectedItem() + "_ET.txt";
-           // label.setText(fileName);
-           //showEventVisualizationControls(0);
 
         }
         else if(eventsRadioButton.isSelected()) {
             mode = EVENTS;
             fileName = "data/split_aggregated_data/p" + userList.getSelectionModel().getSelectedItem() + "_" + textList.getSelectionModel().getSelectedItem() + "_FS.txt";
-           // label.setText(fileName);
-           /// showEventVisualizationControls(1);
-        }
-        else if(tetRadioButton.isSelected()) {
-            mode = TET;
-            fileName = "data/tet/TET_raw_" + userList.getSelectionModel().getSelectedItem() + ".txt";
-           // label.setText(fileName);
-           // showEventVisualizationControls(0);
         }
     }
 
@@ -642,10 +647,6 @@ public class Controller {
         else if(dispersionRadioButton.isSelected()){
             durationDisplay = false;
         }
-    }
-
-    public void setClean(){
-        clean = cleanCheckBox.isSelected();
     }
 
     public void setCleanOutliers(){
@@ -723,27 +724,6 @@ public class Controller {
         }
     }
 
-    public void chooseFile(){
-        FileChooser fileChooser = new FileChooser();
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
-        fileChooser.getExtensionFilters().add(extFilter);
-        fileChooser.setInitialDirectory(new File("data/.").getAbsoluteFile());
-        File file = fileChooser.showOpenDialog(surface.getScene().getWindow());
-        try{
-            if(file == null)
-                return;
-            fileName = file.getCanonicalPath();
-            if(tm!=null) {
-                tm.cancel();
-                tm.purge();
-            }
-            selectedTextID = -1;
-            initialize();
-        }
-        catch(IOException ex){
-            println("File not found");
-        }
-    }
 
     public void stop(){
         if(tm!=null) {
@@ -751,15 +731,5 @@ public class Controller {
             tm.purge();
         }
     }
-
-
-
-    //EventHandler<ActionEvent> buttonHandler = new EventHandler<ActionEvent>() {
-    //    @FXML
-    //    public void handle(ActionEvent event) {
-    //        statusLabel.setText("Accepted");
-    //        event.consume();
-    //    }
-    //};
 
 }
