@@ -1,0 +1,7 @@
+[1] "Model: SVM_RADIAL\tBALANCING: NONE\t Scoring function: accuracy"
+[1] "% of 1s: 98.43 %"
+[1] "% of correct 1s: 82.05 %"
+[1] "% of 0s: 1.57 %"
+[1] "% of correct 0s: 9.50 %"
+[1] "Mean accuracy: 81.22 %"
+[1] "Saccade.Amplitude.Mean" "comprehension"          "interest_label"         "interest"              

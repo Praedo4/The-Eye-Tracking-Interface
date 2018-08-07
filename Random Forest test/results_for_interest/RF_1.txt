@@ -1,0 +1,4 @@
+[1] "Model: RF Dist: 1"
+[1] "Mean accuracy: 57.56 %"
+[1] "MSE: 1.76 "
+[1] "Total.Reading.Time"           "Fixation.Dispersion.Kurtosis" "Saccade.Duration.Skewness"    "interest"                    

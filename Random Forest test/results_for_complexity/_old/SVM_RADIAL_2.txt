@@ -1,0 +1,2 @@
+[1] "Model: SVM_RADIAL Dist: 2"
+[1] "Mean accuracy: 87.81 %"

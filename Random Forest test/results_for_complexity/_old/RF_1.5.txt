@@ -1,0 +1,4 @@
+[1] "Model: RF Dist: 1.5"
+[1] "Mean accuracy: 74.08 %"
+
+[1] "Number.Of.Line.to.line.Saccades" "Fixation.Dispersion.Kurtosis"    "Saccade.Duration.Kurtosis"       "Saccade.Amplitude.Skewness"

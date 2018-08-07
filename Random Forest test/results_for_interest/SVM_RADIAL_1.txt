@@ -1,0 +1,4 @@
+[1] "Model: SVM_RADIAL Dist: 1"
+[1] "Mean accuracy: 57.42 %"
+[1] "MSE: 1.80 "
+[1] "Saccade.Duration.SD"       "Saccade.Duration.Variance" "Saccade.Amplitude.SD"      "interest"                 

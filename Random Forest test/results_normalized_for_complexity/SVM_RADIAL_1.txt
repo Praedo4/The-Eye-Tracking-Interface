@@ -1,0 +1,5 @@
+[1] "Model: SVM_RADIAL Dist: 1"
+[1] "Mean accuracy: 52.74 %"
+[1] "MSE: 1.92 "
+[1] "Fixation.Rate"                       "Mean.Number.of.Regressions.Per.Line" "Fixation.Duration.Mean"              "Fixation.Duration.Skewness"         
+[5] "Fixation.Duration.Kurtosis"          "Saccade.Amplitude.Kurtosis"          "complexity"                         

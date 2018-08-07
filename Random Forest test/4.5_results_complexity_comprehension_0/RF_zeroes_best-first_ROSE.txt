@@ -1,0 +1,6 @@
+[1] "Model: RF\tBALANCING: ROSE\t Scoring function: zeroes"
+[1] "% of 1s: 85.43 %"
+[1] "% of correct 1s: 65.49 %"
+[1] "% of 0s: 14.57 %"
+[1] "% of correct 0s: 76.16 %"
+[1] "Mean accuracy: 66.37 %"

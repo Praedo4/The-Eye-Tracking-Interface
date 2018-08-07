@@ -50,8 +50,9 @@ public class FSReader {
 
         double x = Double.parseDouble(words[12]), y = Double.parseDouble(words[13]);
         double dispX = Double.parseDouble(words[14]), dispY = Double.parseDouble(words[15]);
+        double pupilDiameter = Double.parseDouble(words[16]);
         long start = Long.parseLong(words[9]), end = Long.parseLong(words[10]), duration = Long.parseLong(words[11]);
-        return new FSEvent(x,y,dispX,dispY,start, end, duration, true);
+        return new FSEvent(x,y,dispX,dispY,start, end, duration, pupilDiameter, true);
 
     }
 

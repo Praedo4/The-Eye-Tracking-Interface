@@ -10,7 +10,7 @@ from os.path import isfile, join
 
 path = 'data/'                                                  #path to the files
 S = 500                                                         #number of samples to be drawn
-testNs = [10,50,100,150,200,250,300,350,400,450,500]            #this is the set of Ns to be tested. In case of changing the size of the set, adjustments need to be made to ordering and number of subplots
+testNs = [10,50,100,150,200,250,500]            #this is the set of Ns to be tested. In case of changing the size of the set, adjustments need to be made to ordering and number of subplots
 
 
 random.seed()
@@ -43,7 +43,8 @@ for N in testNs:
     #    print(str(mean))                                       #|/
  
        
-    n_b = int(int(1+20.3*math.log10(N)))                        #number of bins for the plot of means
+    #n_b = int(int(1+1.3*math.log10(N)))                        #number of bins for the plot of means
+    n_b = 20
     meanPlot = fig.add_subplot(4,3,pltIndex)                    #4 = number of columns, 3 = number of rows, pltIndex is 1-12, going row by row left to right
     meanPlot.hist(meanList, normed=True, bins=n_b)              #create histogram
     meanPlot.set_title('Mean Fixation Duration N = ' + str(N))  #||\

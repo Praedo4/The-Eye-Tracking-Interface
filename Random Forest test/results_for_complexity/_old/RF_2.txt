@@ -1,0 +1,2 @@
+[1] "Model: RF Dist: 2"
+[1] "Mean accuracy: 89.30 %"

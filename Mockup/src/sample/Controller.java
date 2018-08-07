@@ -31,6 +31,7 @@ public class Controller {
     @FXML private TextField label;
     @FXML private Canvas surface;
     @FXML private RadioButton eventsRadioButton;
+    @FXML private RadioButton savedEventsRadioButton;
     @FXML private RadioButton gazePointsRadioButton;
     @FXML private RadioButton dispersionRadioButton;
     @FXML private RadioButton durationRadioButton;
@@ -430,7 +431,7 @@ public class Controller {
 
         ETReader etReader = new ETReader();
         FileWriter fileWriter = new FileWriter("measures.xls");
-        String [] columns = {"User ID","Text ID","Total Reading Time", "Scanpath Length", "Mean Pupil Dilation", "Pupillary Unrest Index", "Fixation Number", "Fixation Rate", "Mean Number Of Fixations Per Line","Number Of Line-to-line Saccades", "Number of Regressions", "Regression Rate", "Mean Number of Regressions Per Line",
+        String [] columns = {"person.ID","text.ID","Total Reading Time", "Scanpath Length", "Mean Pupil Dilation", "Pupillary Unrest Index", "Fixation Number", "Fixation Rate", "Mean Number Of Fixations Per Line","Number Of Line-to-line Saccades", "Number of Regressions", "Regression Rate", "Mean Number of Regressions Per Line",
                 "Fixation Duration Mean","Fixation Duration SD","Fixation Duration Variance","Fixation Duration Skewness","Fixation Duration Kurtosis",
                 "Fixation Dispersion Mean","Fixation Dispersion SD","Fixation Dispersion Variance","Fixation Dispersion Skewness","Fixation Dispersion Kurtosis",
                 "Saccade Duration Mean","Saccade Duration SD","Saccade Duration Variance","Saccade Duration Skewness","Saccade Duration Kurtosis",
@@ -441,17 +442,24 @@ public class Controller {
             headerLine += "\t" + columns[i];
         fileWriter.write(headerLine+"\n");
         for(int i = 0 ;  i < userList.getItems().size(); i++){
+            double userFeatures[][] = new double[textList.getItems().size()][];
+            String user_id = userList.getItems().get(i);
+            int excluded = 0;
+            boolean excluded_mask[] = new boolean[textList.getItems().size()];
             for(int j = 0; j < textList.getItems().size(); j++){
-                String user_id = userList.getItems().get(i), text_id = textList.getItems().get(j).toString();
+                String text_id = textList.getItems().get(j).toString();
                 String fileName = "data/split_raw_data/p" + user_id + "_" + text_id + "_ET.txt";
                 println("User ID: " + user_id + "\t Text ID: " + text_id);
-                if(user_id.compareTo("32") == 0)
-                {
-                    println("Hello");
-                }
+                //if(user_id.compareTo("32") == 0)
+                //{
+                //    println("Hello");
+                //}
                 ETCollection etdata = etReader.readETCollection(fileName);
-                if(etdata.size < 1000)
+                if(etdata.size < 1000) {
+                    excluded++;
+                    excluded_mask[j] = true;
                     continue;
+                }
                 if(cleanOutliersCheckBox.isSelected())
                     etdata = signalProcessing.cutOutliers(etdata,bb_x,bb_y,bb_w,bb_h);
                 if(interpolationCheckBox.isSelected())
@@ -460,16 +468,45 @@ public class Controller {
                     etdata = signalProcessing.applySavitzkyGolayFilter(etdata,sgolayOrder,sgolayLength);
 
                 FSCollection fsdata = signalProcessing.runEventDetection(etdata,idtDispersion,idtDuration);
-                if (fsdata == null)
+                if (fsdata == null) {
+                    excluded++;
+                    excluded_mask[j] = true;
                     continue;
+                }
                 double features[] = calculateAllMeasuresForAText(etdata,fsdata);
-                if(features[7] < 10)
+                userFeatures[j] = features;
+                if(features[7] < 10) {
+                    excluded++;
+                    excluded_mask[j] = true;
                     continue;
+                }
+                saveEvents(fsdata,"data/saved_aggregated_data/p" + user_id + "_" + text_id + "_FS.txt",text_id);
                 //double features[] = {1.0,2.0,3.0};
+            }
+            for(int k = 0; k < columns.length - 2; k++){
+                double[]  distribution = new double [userFeatures.length-excluded];
+                int w = 0;
+                for(int j = 0; j < userFeatures.length; j++){
+                    if(!excluded_mask[j]) {
+                        distribution[w] = userFeatures[j][k];
+                        w++;
+                    }
 
-                fileWriter.write(user_id + "\t" + text_id);
-                for(int k = 0; k < features.length; k++)
-                    fileWriter.write("\t" + Double.toString(Math.round(features[k] * 100000000)/100000000.0));
+                }
+                double [] stats = calculateStatistics(distribution);
+                double mean = stats[0], sd = stats[1];
+                for(int j = 0; j < userFeatures.length; j++){
+                    if(!excluded_mask[j])
+                        userFeatures[j][k] = ( userFeatures[j][k] - mean) / sd;
+                }
+
+            }
+            for(int j = 0; j < textList.getItems().size(); j++) {
+                if( excluded_mask[j])
+                    continue;
+                fileWriter.write(user_id + "\t" + textList.getItems().get(j).toString());
+                for (int k = 0; k < userFeatures[j].length; k++)
+                    fileWriter.write("\t" + Double.toString(Math.round(userFeatures[j][k] * 100000000) / 100000000.0));
                 fileWriter.write('\n');
             }
         }
@@ -612,6 +649,26 @@ public class Controller {
         return result;
     }
 
+    private void saveEvents(FSCollection eventData, String fileName, String text_id){
+        try {
+            FileWriter fw = new FileWriter(fileName);
+            fw.write("rails_session_id\teye\tstart_event_name\tstart_event_stimulus_id\tstop_event_name\tstop_event_stimulus_id\tevent type\tnumber\tstart\tend\tduration\tlocation X\tlocation Y\tdispersion X\tdispersion Y\tavg. pupil size X\tavg. pupil size Y\n");
+            for(int i = 0; i < eventData.events.length; i++){
+               //String line;
+                FSEvent event = eventData.events[i];
+                String line = "1\tright\tstimulus_" + text_id + "\t" + text_id + "\tstimulus_" + text_id + "\t" + text_id + "\tFixation\tR\t" + (i+1) + "\t";
+                fw.write(line);
+                line = event.start + "\t" + event.end + "\t" + event.duration + "\t" + event.x + "\t" + event.y + "\t" + event.x2 + "\t" + event.y2 + "\t" + event.meanPupilDiameter + "\t" + event.meanPupilDiameter + "\n";
+                fw.write(line);
+            }
+            fw.close();
+        }
+        catch (Exception ex) {
+            println("Error writing to " + fileName);
+            return;
+        }
+   }
+
     //////////////////////////////////////////////////////////////////////////////
     //////////////////////////// UI Functions ////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
@@ -637,6 +694,10 @@ public class Controller {
         else if(eventsRadioButton.isSelected()) {
             mode = EVENTS;
             fileName = "data/split_aggregated_data/p" + userList.getSelectionModel().getSelectedItem() + "_" + textList.getSelectionModel().getSelectedItem() + "_FS.txt";
+        }
+        else if(savedEventsRadioButton.isSelected()) {
+            mode = EVENTS;
+            fileName = "data/saved_aggregated_data/p" + userList.getSelectionModel().getSelectedItem() + "_" + textList.getSelectionModel().getSelectedItem() + "_FS.txt";
         }
     }
 

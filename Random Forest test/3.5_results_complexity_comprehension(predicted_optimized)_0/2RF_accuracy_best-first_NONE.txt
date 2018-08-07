@@ -1,0 +1,8 @@
+[1] "Model: RF\tBALANCING: NONE\t Scoring function: accuracy"
+[1] "% of 1s: 98.51 %"
+[1] "% of correct 1s: 82.91 %"
+[1] "% of 0s: 1.49 %"
+[1] "% of correct 0s: 32.00 %"
+[1] "Mean accuracy: 82.94 %"
+[1] "Total.Reading.Time"    "Number.of.Regressions" "Regression.Rate"       "complexity"            "comprehension"         "interest_label"       
+[7] "interest"             

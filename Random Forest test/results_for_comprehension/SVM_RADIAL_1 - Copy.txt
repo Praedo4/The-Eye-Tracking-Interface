@@ -1,0 +1,3 @@
+[1] "Model: SVM_RADIAL Dist: 1"
+[1] "Mean accuracy: 66.76 %"
+[1] "Scanpath.Length" "Regression.Rate" "comprehension"  

@@ -1,0 +1,5 @@
+[1] "Model: SVM_RADIAL Dist: 1.5"
+[1] "Mean accuracy: 73.55 %"
+
+1] "Number.Of.Line.to.line.Saccades" "Fixation.Dispersion.SD"          "Fixation.Dispersion.Kurtosis"    "Saccade.Duration.Kurtosis"
+[5] "Saccade.Amplitude.Skewness"      "Saccade.Mean.Velocity.Skewness"

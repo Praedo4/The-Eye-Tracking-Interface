@@ -180,13 +180,16 @@ public class SignalProcessing {
                 int j = 0;
                 for (int i = 0; i < numberOfFixations; i++) {
                     //System.out.printf("Fixation #%d: starts at %d ends at %d (duration: %d) at position (%f, %f)\n", i + 1, starts[i], ends[i], durs[i], out_xs[i], out_ys[i]);
-                    double dispersion = 0;
+                    double dispersion = 0, mean_pupil_diameter = 0,number_of_samples = 0;
+
                     for (; j < n && data.gazePoints[j].timestamp <= timeStampStart + ends[i]; j++) {
                         if (data.gazePoints[j].timestamp >= timeStampStart + starts[i]) {
                             dispersion = Math.max(dispersion, Math.sqrt(Math.pow(data.gazePoints[j].x - out_xs[i], 2) + Math.pow(data.gazePoints[j].y - out_ys[i], 2)));
+                            mean_pupil_diameter += data.gazePoints[j].pupil_diameter;
+                            number_of_samples++;
                         }
                     }
-                    fsData[i] = new FSEvent(out_xs[i], out_ys[i], dispersion, dispersion, timeStampStart + starts[i], timeStampStart + ends[i], durs[i], true);
+                    fsData[i] = new FSEvent(out_xs[i], out_ys[i], dispersion, dispersion, timeStampStart + starts[i], timeStampStart + ends[i], durs[i], mean_pupil_diameter/number_of_samples, true);
                 }
                 eventData.initialize(fsData);
                 // Visualize the data

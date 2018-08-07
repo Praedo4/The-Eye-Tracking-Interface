@@ -1,0 +1,6 @@
+[1] "Model: SVM_RADIAL\tBALANCING: NONE\t Scoring function: zeroes"
+[1] "% of 1s: 91.88 %"
+[1] "% of correct 1s: 83.63 %"
+[1] "% of 0s: 8.12 %"
+[1] "% of correct 0s: 38.85 %"
+[1] "Mean accuracy: 79.92 %"

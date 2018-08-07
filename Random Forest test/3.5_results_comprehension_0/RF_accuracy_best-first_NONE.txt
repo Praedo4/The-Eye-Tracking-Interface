@@ -1,0 +1,8 @@
+[1] "Model: RF\tBALANCING: NONE\t Scoring function: accuracy"
+[1] "% of 1s: 91.55 %"
+[1] "% of correct 1s: 87.33 %"
+[1] "% of 0s: 8.45 %"
+[1] "% of correct 0s: 75.50 %"
+[1] "Mean accuracy: 86.39 %"
+[1] "Total.Reading.Time"             "Saccade.Mean.Velocity.Kurtosis" "comprehension"                  "interest_label"                
+[5] "interest"                      

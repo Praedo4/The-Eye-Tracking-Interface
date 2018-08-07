@@ -1,0 +1,4 @@
+[1] "Model: RF Dist: 1"
+[1] "Mean accuracy: 51.47 %"
+[1] "MSE: 2.13 "
+[1] "Saccade.Duration.Mean"  "Saccade.Amplitude.Mean" "complexity"            

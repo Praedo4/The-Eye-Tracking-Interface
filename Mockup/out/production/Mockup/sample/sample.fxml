@@ -32,7 +32,7 @@
                   <ToggleGroup fx:id="data" />
                </toggleGroup>
             </RadioButton>
-            <RadioButton fx:id="eventsRadioButton" layoutX="71.0" layoutY="105.0" mnemonicParsing="false" onAction="#changeDataMode" prefHeight="35.0" prefWidth="130.0" text="Events" toggleGroup="$data">
+            <RadioButton fx:id="eventsRadioButton" layoutX="71.0" layoutY="105.0" mnemonicParsing="false" onAction="#changeDataMode" prefHeight="35.0" prefWidth="220.0" text="Original events" toggleGroup="$data">
                <font>
                   <Font name="Rockwell" size="24.0" />
                </font></RadioButton>
@@ -215,6 +215,11 @@
                   <Font name="Rockwell" size="24.0" />
                </font>
             </Button>
+            <RadioButton fx:id="savedEventsRadioButton" layoutX="71.0" layoutY="138.0" mnemonicParsing="false" onAction="#changeDataMode" prefHeight="35.0" prefWidth="220.0" text="Saved events" toggleGroup="$data">
+               <font>
+                  <Font name="Rockwell" size="24.0" />
+               </font>
+            </RadioButton>
          </children>
       </Pane>
    </children>

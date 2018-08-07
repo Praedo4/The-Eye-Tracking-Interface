@@ -1,0 +1,4 @@
+[1] "Model: SVM_RADIAL Dist: 1"
+[1] "Mean accuracy: 57.14 %"
+[1] "MSE: 1.64 "
+[1] "Fixation.Duration.SD"       "Fixation.Duration.Variance" "Saccade.Amplitude.Kurtosis" "Saccade.Mean.Velocity.Mean" "interest"                  

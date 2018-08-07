@@ -1,0 +1,7 @@
+[1] "Model: SVM_RADIAL\tBALANCING: ROSE\t Scoring function: accuracy"
+[1] "% of 1s: 70.70 %"
+[1] "% of correct 1s: 88.39 %"
+[1] "% of 0s: 29.30 %"
+[1] "% of correct 0s: 35.99 %"
+[1] "Mean accuracy: 72.27 %"
+[1] "Number.Of.Line.to.line.Saccades" "comprehension"                   "interest_label"                  "interest"                       

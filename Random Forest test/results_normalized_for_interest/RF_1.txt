@@ -1,0 +1,5 @@
+[1] "Model: RF Dist: 1"
+[1] "Mean accuracy: 58.54 %"
+[1] "MSE: 1.63 "
+[1] "Number.Of.Line.to.line.Saccades" "Number.of.Regressions"           "Fixation.Duration.SD"            "Fixation.Duration.Variance"     
+[5] "Fixation.Duration.Skewness"      "interest"                       

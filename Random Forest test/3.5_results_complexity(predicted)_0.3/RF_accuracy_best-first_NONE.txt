@@ -1,0 +1,8 @@
+[1] "Model: RF\tBALANCING: NONE\t Scoring function: accuracy"
+[1] "% of 1s: 96.26 %"
+[1] "% of correct 1s: 84.02 %"
+[1] "% of 0s: 3.74 %"
+[1] "% of correct 0s: 52.67 %"
+[1] "Mean accuracy: 83.66 %"
+[1] "Fixation.Number"              "Fixation.Dispersion.Kurtosis" "Saccade.Duration.Skewness"    "Saccade.Amplitude.Kurtosis"   "complexity"                  
+[6] "interest_label"               "interest"                    
