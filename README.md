@@ -33,15 +33,17 @@ These statistical tests were implemented in python with solutions commented in-l
 Machine learning models that are used for predicting interest from the measures obtained from the framework. Implemented in R, using latest version (3.5.1 at the time of release). In order to run the project, install the latest version of R and all the dependencies, as listed in the beggining of the source file. A function 'install_packages' is defined in the begging of the source file, that should update R and install all the packages. In case that does not work, install the packages manually using the same list, as provided in the function.
 
 The script can be split into three distinct sections: reading the input data, defining the test functions and running the tests. In the first section, there are several parameters that are user-defined and are then used for further processing. In case these parameters are changed, the whole solutions needs to be recompiled. These parameters are: input_file ('' or 'normalized'), interesting_threshold (values 3.5, 4 and 4.5 were tested extensively) and cor_threshold (0.3 and 0.4 are recommended).  The test functions are defined for all three cases: classification, regression and classification combined with regression. Due to specific implementation of feature selection methods from package FSelector, the test function has to take only one argument, that is the feature subset that is being interated. Therefore, all the parameters are defined in a separate array 'parameters' and are then manipulated when expensive testing is done in the third section of the program. Due to implementation limitations of namespace variable visibility, three testing routines are NOT defined in separate functions, but are split into three blocks separated with comments in line. These three blocks are meant to be run at separate occasions depending on the specific set of parameters that are being tested. Before each sections, where the tests are run, boolean values are defined for each parameter. True values means that this parameter is tested for all the values defined in the respective array, while False values means that the default (the first) value is used for the parameter. Directory names and filenames are constructed based on the set of parameters. 
+
+List of parameters: 
+1. input_file: '' or 'normalized for processed and normalized datasets
+2. interesting_threshold: 3.5 or 4 or 4.5 - value of grade above which the text is considered interesting
+3. cor_threshold: 0.3 or 0.4 - threshold of normalized correlation values for feature filtering, where only features with correlation above the threshold are kept
+4. models: 'RF' or 'SVM_RADIAL' - Random Forest model of Support Vector Machine with radial kernel function
+5. scoring function: 'accuracy' or 'zeroes' - scoring function for feature selection of either accuracy or True Negative Rate
+6. search: 'best-first' or 'forward' - search used for feature selection, either best-first search or forward search is used
+7. balancing: 'NONE' or 'ROSE' - applying balancing method of ROSE for modelling the balanced dataset
+8. dist: 1 or 1.5 or 2 - distance used in regression models for evaluating relative accuracy, where grades within this distance from the original values are considered to be predicted accurately
+9. regression_target: 'interest' or 'complexity' or 'comprehension' - variable to be predicted by the regression model
+10. complexity_flag and comprehension_flag: 0 - not used, 1 - original value, 2 - predicted. Defining whether complexity and/or comprehension are used for classification in the final model
+
 > Note that directories for test results have to be created prior to the test to be populated, and folders are not created procedurally. 
-List of parameters:
-input_file: '' or 'normalized for processed and normalized datasets
-interesting_threshold: 3.5 or 4 or 4.5 - value of grade above which the text is considered interesting
-cor_threshold: 0.3 or 0.4 - threshold of normalized correlation values for feature filtering, where only features with correlation above the threshold are kept
-models: 'RF' or 'SVM_RADIAL' - Random Forest model of Support Vector Machine with radial kernel function
-scoring function: 'accuracy' or 'zeroes' - scoring function for feature selection of either accuracy or True Negative Rate
-search: 'best-first' or 'forward' - search used for feature selection, either best-first search or forward search is used
-balancing: 'NONE' or 'ROSE' - applying balancing method of ROSE for modelling the balanced dataset
-dist: 1 or 1.5 or 2 - distance used in regression models for evaluating relative accuracy, where grades within this distance from the original values are considered to be predicted accurately
-regression_target: 'interest' or 'complexity' or 'comprehension' - variable to be predicted by the regression model
-complexity_flag and comprehension_flag: 0 - not used, 1 - original value, 2 - predicted. Defining whether complexity and/or comprehension are used for classification in the final model
